@@ -1,10 +1,21 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Book, MapPin, Calendar, Tag, User, Hash, Layers } from 'lucide-react';
-import { Libro, EVENT_CONFIG } from '@/types/book';
+import { ArrowLeft, Book, MapPin, Calendar, Tag, User, Hash, Layers, Pencil, Plus } from 'lucide-react';
+import { Libro, EVENT_CONFIG, EventoHistorial } from '@/types/book';
+import BookFormDialog from '@/components/BookFormDialog';
+import MovementDialog from '@/components/MovementDialog';
 
 interface HistoryViewProps {
   book: Libro;
   onBack: () => void;
+  onEditBook: (data: Partial<Libro>) => void;
+  onAddMovement: (movement: {
+    tipo_evento: EventoHistorial['tipo_evento'];
+    descripcion_evento: string;
+    stock_cambio: number;
+    provincia_destino?: string;
+    observaciones?: string;
+  }) => void;
 }
 
 const estadoLabel: Record<string, string> = {
@@ -13,7 +24,10 @@ const estadoLabel: Record<string, string> = {
   inactivo: 'Inactivo',
 };
 
-const HistoryView = ({ book, onBack }: HistoryViewProps) => {
+const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewProps) => {
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showMovementDialog, setShowMovementDialog] = useState(false);
+
   const sortedHistory = [...book.historial].sort(
     (a, b) => new Date(b.fecha_evento).getTime() - new Date(a.fecha_evento).getTime()
   );
@@ -27,19 +41,39 @@ const HistoryView = ({ book, onBack }: HistoryViewProps) => {
       className="min-h-svh bg-background"
     >
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft size={16} /> Volver al inventario
-        </button>
+        <div className="flex justify-between items-center">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={16} /> Volver al inventario
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowEditDialog(true)}
+              className="h-9 px-4 flex items-center gap-2 bg-card ring-1 ring-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors"
+            >
+              <Pencil size={14} /> Editar
+            </button>
+            <button
+              onClick={() => setShowMovementDialog(true)}
+              className="h-9 px-4 flex items-center gap-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all"
+            >
+              <Plus size={14} /> Registrar Movimiento
+            </button>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sidebar: Book Identity */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-card p-6 rounded-xl shadow-card ring-1 ring-border space-y-6">
-              <div className="aspect-[3/4] bg-secondary rounded-lg flex items-center justify-center">
-                <Book size={48} className="text-muted-foreground/30" />
+              <div className="aspect-[3/4] bg-secondary rounded-lg flex items-center justify-center overflow-hidden">
+                {(book as any).imagen ? (
+                  <img src={(book as any).imagen} alt={book.titulo} className="w-full h-full object-cover" />
+                ) : (
+                  <Book size={48} className="text-muted-foreground/30" />
+                )}
               </div>
               <div>
                 <h3 className="text-xl font-bold tracking-tight text-foreground">{book.titulo}</h3>
@@ -62,9 +96,12 @@ const HistoryView = ({ book, onBack }: HistoryViewProps) => {
 
           {/* Main: Timeline */}
           <div className="lg:col-span-8 space-y-4">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              Historial de Trazabilidad
-            </h4>
+            <div className="flex justify-between items-center">
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                Historial de Trazabilidad
+              </h4>
+              <span className="text-xs text-muted-foreground">{sortedHistory.length} eventos</span>
+            </div>
 
             <div className="relative space-y-0">
               {/* Timeline line */}
@@ -113,6 +150,33 @@ const HistoryView = ({ book, onBack }: HistoryViewProps) => {
           </div>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      {showEditDialog && (
+        <BookFormDialog
+          open={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
+          book={book}
+          onSave={(data) => {
+            onEditBook(data);
+            setShowEditDialog(false);
+          }}
+        />
+      )}
+
+      {/* Movement Dialog */}
+      {showMovementDialog && (
+        <MovementDialog
+          open={showMovementDialog}
+          onClose={() => setShowMovementDialog(false)}
+          bookTitle={book.titulo}
+          currentStock={book.stock_actual}
+          onSave={(m) => {
+            onAddMovement(m);
+            setShowMovementDialog(false);
+          }}
+        />
+      )}
     </motion.div>
   );
 };
