@@ -123,7 +123,7 @@ const DetailItem = ({
   value,
   highlight,
 }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<any>;
   label: string;
   value: string;
   highlight?: boolean;
