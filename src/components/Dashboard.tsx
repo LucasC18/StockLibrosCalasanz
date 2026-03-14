@@ -1,12 +1,16 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, ChevronRight, BookOpen, AlertTriangle, Send, Activity, LogOut, X } from 'lucide-react';
+import { Search, Filter, ChevronRight, BookOpen, AlertTriangle, Send, Activity, LogOut, X, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Libro } from '@/types/book';
+import BookFormDialog from '@/components/BookFormDialog';
 
 interface DashboardProps {
   books: Libro[];
   onSelectBook: (book: Libro) => void;
   onLogout: () => void;
+  onAddBook: (data: Partial<Libro>) => void;
+  onEditBook: (bookId: string, data: Partial<Libro>) => void;
+  onDeleteBook: (bookId: string) => void;
 }
 
 const estadoConfig = {
@@ -15,10 +19,13 @@ const estadoConfig = {
   inactivo: { label: 'Inactivo', className: 'bg-slate-100 text-slate-500' },
 };
 
-const Dashboard = ({ books, onSelectBook, onLogout }: DashboardProps) => {
+const Dashboard = ({ books, onSelectBook, onLogout, onAddBook, onEditBook, onDeleteBook }: DashboardProps) => {
   const [search, setSearch] = useState('');
   const [filterEstado, setFilterEstado] = useState<string>('todos');
   const [showFilters, setShowFilters] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingBook, setEditingBook] = useState<Libro | null>(null);
+  const [deletingBook, setDeletingBook] = useState<Libro | null>(null);
 
   const filtered = useMemo(() => {
     return books.filter((b) => {
@@ -39,7 +46,10 @@ const Dashboard = ({ books, onSelectBook, onLogout }: DashboardProps) => {
     const last = b.historial[b.historial.length - 1];
     return last?.tipo_evento === 'ENVIO';
   }).length;
-  const movimientosHoy = 3; // mock
+  const movimientosHoy = books.reduce((acc, b) => {
+    const today = new Date().toISOString().slice(0, 10);
+    return acc + b.historial.filter((h) => h.fecha_evento.startsWith(today)).length;
+  }, 0);
 
   const kpis = [
     { label: 'Total Libros', value: totalLibros, icon: BookOpen, variant: 'default' as const },
@@ -70,18 +80,26 @@ const Dashboard = ({ books, onSelectBook, onLogout }: DashboardProps) => {
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <LogOut size={16} />
-            Cerrar sesión
+            <span className="hidden sm:inline">Cerrar sesión</span>
           </button>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Header */}
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Inventario General</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Monitoreo de existencias y movimientos en tiempo real.
-          </p>
+        <div className="flex justify-between items-start flex-wrap gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Inventario General</h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Monitoreo de existencias y movimientos en tiempo real.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddDialog(true)}
+            className="h-10 px-5 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2"
+          >
+            <Plus size={16} /> Nuevo Libro
+          </button>
         </div>
 
         {/* KPIs */}
@@ -158,8 +176,8 @@ const Dashboard = ({ books, onSelectBook, onLogout }: DashboardProps) => {
             <table className="w-full text-left border-collapse">
               <thead className="bg-secondary/50 border-b border-border">
                 <tr>
-                  {['Libro', 'ISBN', 'Stock', 'Última Prov.', 'Estado', ''].map((h) => (
-                    <th key={h} className={`px-6 py-3.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider ${h === '' ? 'text-right' : ''}`}>
+                  {['Libro', 'ISBN', 'Stock', 'Última Prov.', 'Estado', 'Acciones'].map((h) => (
+                    <th key={h} className={`px-6 py-3.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider ${h === 'Acciones' ? 'text-right' : ''}`}>
                       {h}
                     </th>
                   ))}
@@ -178,29 +196,63 @@ const Dashboard = ({ books, onSelectBook, onLogout }: DashboardProps) => {
                     return (
                       <tr
                         key={book.id}
-                        className="group hover:bg-secondary/30 transition-colors cursor-pointer"
-                        onClick={() => onSelectBook(book)}
+                        className="group hover:bg-secondary/30 transition-colors"
                       >
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-foreground text-sm">{book.titulo}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {book.autor} • {book.codigo}
+                        <td className="px-6 py-4 cursor-pointer" onClick={() => onSelectBook(book)}>
+                          <div className="flex items-center gap-3">
+                            {(book as any).imagen ? (
+                              <img src={(book as any).imagen} alt="" className="w-8 h-10 rounded object-cover ring-1 ring-border" />
+                            ) : null}
+                            <div>
+                              <div className="font-medium text-foreground text-sm">{book.titulo}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {book.autor} • {book.codigo}
+                              </div>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm font-mono text-muted-foreground">{book.isbn}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-sm font-mono text-muted-foreground cursor-pointer" onClick={() => onSelectBook(book)}>{book.isbn}</td>
+                        <td className="px-6 py-4 cursor-pointer" onClick={() => onSelectBook(book)}>
                           <span className={`text-sm font-semibold ${book.stock_actual <= 10 ? 'text-amber-600' : 'text-foreground'}`}>
                             {book.stock_actual} u.
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">{book.ultima_provincia}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-sm text-muted-foreground cursor-pointer" onClick={() => onSelectBook(book)}>{book.ultima_provincia}</td>
+                        <td className="px-6 py-4 cursor-pointer" onClick={() => onSelectBook(book)}>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${est.className}`}>
                             {est.label}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <ChevronRight className="inline text-border group-hover:text-primary transition-colors group-hover:translate-x-1 transform duration-150" size={20} />
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingBook(book);
+                              }}
+                              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                              title="Editar"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingBook(book);
+                              }}
+                              className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => onSelectBook(book)}
+                              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+                              title="Ver historial"
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -211,6 +263,65 @@ const Dashboard = ({ books, onSelectBook, onLogout }: DashboardProps) => {
           </div>
         </div>
       </div>
+
+      {/* Add Book Dialog */}
+      {showAddDialog && (
+        <BookFormDialog
+          open={showAddDialog}
+          onClose={() => setShowAddDialog(false)}
+          onSave={(data) => {
+            onAddBook(data);
+            setShowAddDialog(false);
+          }}
+        />
+      )}
+
+      {/* Edit Book Dialog */}
+      {editingBook && (
+        <BookFormDialog
+          open={!!editingBook}
+          onClose={() => setEditingBook(null)}
+          book={editingBook}
+          onSave={(data) => {
+            onEditBook(editingBook.id, data);
+            setEditingBook(null);
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      {deletingBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm" onClick={() => setDeletingBook(null)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-card p-6 rounded-xl shadow-elevated max-w-sm w-full mx-4 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-foreground">Eliminar libro</h3>
+            <p className="text-sm text-muted-foreground">
+              ¿Estás seguro de que querés eliminar <strong>"{deletingBook.titulo}"</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeletingBook(null)}
+                className="h-9 px-4 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  onDeleteBook(deletingBook.id);
+                  setDeletingBook(null);
+                }}
+                className="h-9 px-4 rounded-lg text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
+              >
+                Eliminar
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };
