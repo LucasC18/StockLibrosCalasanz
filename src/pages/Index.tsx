@@ -1,164 +1,190 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import LoginView from '@/components/LoginView';
 import Dashboard from '@/components/Dashboard';
 import HistoryView from '@/components/HistoryView';
-import { mockBooks } from '@/data/mockBooks';
-import { Libro, EventoHistorial } from '@/types/book';
+import { api, CreateBookPayload, MovementPayload, DashboardSummary } from '@/lib/api';
+import { LibroResumen, LibroDetalle, Usuario } from '@/types/book';
 
 type View = 'login' | 'dashboard' | 'detail';
 
 const Index = () => {
   const [view, setView] = useState<View>('login');
-  const [books, setBooks] = useState<Libro[]>(mockBooks);
-  const [selectedBook, setSelectedBook] = useState<Libro | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [user, setUser] = useState<Usuario | null>(() => {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  });
 
-  const handleLogin = () => setView('dashboard');
-  const handleLogout = () => {
-    setView('login');
-    setSelectedBook(null);
+  const [books, setBooks] = useState<LibroResumen[]>([]);
+  const [selectedBook, setSelectedBook] = useState<LibroDetalle | null>(null);
+  const [summary, setSummary] = useState<DashboardSummary>({
+    totalBooks: 0,
+    lowStockBooks: 0,
+    recentShipments: 0,
+    todayMovements: 0,
+  });
+
+  const loadDashboard = async (authToken: string) => {
+    const [booksRes, summaryRes] = await Promise.all([
+      api.getBooks(authToken),
+      api.getSummary(authToken),
+    ]);
+
+    setBooks(booksRes.items);
+    setSummary(summaryRes);
   };
-  const handleSelectBook = (book: Libro) => {
-    setSelectedBook(book);
-    setView('detail');
-  };
-  const handleBack = () => {
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      if (!token) return;
+
+      try {
+        await loadDashboard(token);
+        setView('dashboard');
+      } catch {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+        setView('login');
+      }
+    };
+
+    bootstrap();
+  }, [token]);
+
+  const handleLogin = async (authToken: string, authUser: Usuario) => {
+    setToken(authToken);
+    setUser(authUser);
+    await loadDashboard(authToken);
     setView('dashboard');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+    setUser(null);
+    setBooks([]);
     setSelectedBook(null);
+    setView('login');
   };
 
-  const handleAddBook = (data: Partial<Libro>) => {
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
-    const newBook: Libro = {
-      id: crypto.randomUUID(),
-      codigo: data.codigo || '',
-      titulo: data.titulo || '',
-      autor: data.autor || '',
-      editorial: data.editorial || '',
-      isbn: data.isbn || '',
-      categoria: data.categoria || '',
-      descripcion: data.descripcion || '',
-      stock_actual: data.stock_actual ?? 0,
-      ubicacion: data.ubicacion || '',
-      estado: data.estado || 'activo',
-      fecha_alta: now,
-      fecha_ultima_modificacion: now,
-      ultima_provincia: '—',
-      imagen: (data as any).imagen,
-      historial: [
-        {
-          id: crypto.randomUUID(),
-          libro_id: '',
-          tipo_evento: 'ALTA',
-          descripcion_evento: 'Registro inicial del libro en el sistema.',
-          stock_anterior: 0,
-          stock_nuevo: data.stock_actual ?? 0,
-          usuario_responsable: 'Admin',
-          fecha_evento: now,
-        },
-      ],
-    } as any;
-    newBook.historial[0].libro_id = newBook.id;
-    setBooks((prev) => [newBook, ...prev]);
-    toast.success(`Libro "${newBook.titulo}" registrado correctamente.`);
-  };
+  const handleSelectBook = async (book: LibroResumen) => {
+    if (!token) return;
 
-  const handleEditBook = (bookId: string, data: Partial<Libro>) => {
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
-    setBooks((prev) =>
-      prev.map((b) => {
-        if (b.id !== bookId) return b;
-        const updated = {
-          ...b,
-          ...data,
-          fecha_ultima_modificacion: now,
-          historial: [
-            ...b.historial,
-            {
-              id: crypto.randomUUID(),
-              libro_id: b.id,
-              tipo_evento: 'MODIFICACION' as const,
-              descripcion_evento: 'Datos del libro modificados.',
-              stock_anterior: b.stock_actual,
-              stock_nuevo: data.stock_actual ?? b.stock_actual,
-              usuario_responsable: 'Admin',
-              fecha_evento: now,
-              observaciones: 'Edición desde el panel de administración.',
-            },
-          ],
-        };
-        // Update selectedBook if viewing it
-        if (selectedBook?.id === bookId) {
-          setSelectedBook(updated as Libro);
-        }
-        return updated as Libro;
-      })
-    );
-    toast.success('Libro actualizado correctamente.');
-  };
-
-  const handleDeleteBook = (bookId: string) => {
-    const book = books.find((b) => b.id === bookId);
-    setBooks((prev) => prev.filter((b) => b.id !== bookId));
-    if (selectedBook?.id === bookId) {
-      setSelectedBook(null);
-      setView('dashboard');
+    try {
+      const res = await api.getBookById(book.id, token);
+      setSelectedBook(res.item);
+      setView('detail');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo cargar el detalle del libro.');
     }
-    toast.success(`"${book?.titulo}" eliminado del sistema.`);
   };
 
-  const handleAddMovement = (
-    bookId: string,
-    movement: {
-      tipo_evento: EventoHistorial['tipo_evento'];
-      descripcion_evento: string;
-      stock_cambio: number;
-      provincia_destino?: string;
-      observaciones?: string;
+  const handleBack = () => {
+    setSelectedBook(null);
+    setView('dashboard');
+  };
+
+  const handleAddBook = async (data: Partial<LibroResumen> & { imagen?: string }) => {
+    if (!token) return;
+
+    try {
+      const payload: CreateBookPayload = {
+        codigo: data.codigo || '',
+        titulo: data.titulo || '',
+        autor: data.autor || '',
+        editorial: data.editorial || '',
+        isbn: data.isbn || '',
+        categoria: data.categoria || '',
+        descripcion: data.descripcion || '',
+        stock_actual: data.stock_actual ?? 0,
+        stock_minimo: data.stock_minimo ?? 0,
+        ubicacion: data.ubicacion || '',
+        ultima_provincia: data.ultima_provincia || '',
+        imagen_url: data.imagen || '',
+      };
+
+      await api.createBook(payload, token);
+      await loadDashboard(token);
+      toast.success('Libro registrado correctamente.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo registrar el libro.');
     }
-  ) => {
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
-    setBooks((prev) =>
-      prev.map((b) => {
-        if (b.id !== bookId) return b;
-        const newStock = Math.max(0, b.stock_actual + movement.stock_cambio);
-        const newEvent: EventoHistorial = {
-          id: crypto.randomUUID(),
-          libro_id: b.id,
-          tipo_evento: movement.tipo_evento,
-          descripcion_evento: movement.descripcion_evento,
-          stock_anterior: b.stock_actual,
-          stock_nuevo: newStock,
-          provincia_destino: movement.provincia_destino,
-          usuario_responsable: 'Admin',
-          fecha_evento: now,
-          observaciones: movement.observaciones,
-        };
-        const updated = {
-          ...b,
-          stock_actual: newStock,
-          estado: newStock === 0 ? 'inactivo' as const : newStock <= 10 ? 'bajo_stock' as const : 'activo' as const,
-          fecha_ultima_modificacion: now,
-          ultima_provincia: movement.provincia_destino || b.ultima_provincia,
-          historial: [...b.historial, newEvent],
-        };
-        if (selectedBook?.id === bookId) {
-          setSelectedBook(updated);
-        }
-        return updated;
-      })
-    );
-    toast.success('Movimiento registrado correctamente.');
+  };
+
+  const handleEditBook = async (bookId: string, data: Partial<LibroResumen> & { imagen?: string }) => {
+    if (!token) return;
+
+    try {
+      const payload: Partial<CreateBookPayload> & { imagen?: string } = {
+        ...data,
+        imagen_url: data.imagen,
+      };
+
+      delete payload.imagen;
+
+      await api.updateBook(bookId, payload, token);
+      await loadDashboard(token);
+
+      if (selectedBook?.id === bookId) {
+        const detailRes = await api.getBookById(bookId, token);
+        setSelectedBook(detailRes.item);
+      }
+
+      toast.success('Libro actualizado correctamente.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo actualizar el libro.');
+    }
+  };
+
+  const handleDeleteBook = async (bookId: string) => {
+    if (!token) return;
+
+    try {
+      await api.deleteBook(bookId, token);
+      await loadDashboard(token);
+
+      if (selectedBook?.id === bookId) {
+        setSelectedBook(null);
+        setView('dashboard');
+      }
+
+      toast.success('Libro eliminado correctamente.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo eliminar el libro.');
+    }
+  };
+
+  const handleAddMovement = async (bookId: string, movement: MovementPayload) => {
+    if (!token) return;
+
+    try {
+      await api.addMovement(bookId, movement, token);
+      await loadDashboard(token);
+
+      const detailRes = await api.getBookById(bookId, token);
+      setSelectedBook(detailRes.item);
+
+      toast.success('Movimiento registrado correctamente.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'No se pudo registrar el movimiento.');
+    }
   };
 
   return (
     <AnimatePresence mode="wait">
       {view === 'login' && <LoginView key="login" onLogin={handleLogin} />}
+
       {view === 'dashboard' && (
         <Dashboard
           key="dashboard"
           books={books}
+          summary={summary}
+          user={user}
           onSelectBook={handleSelectBook}
           onLogout={handleLogout}
           onAddBook={handleAddBook}
@@ -166,13 +192,14 @@ const Index = () => {
           onDeleteBook={handleDeleteBook}
         />
       )}
+
       {view === 'detail' && selectedBook && (
         <HistoryView
           key="detail"
           book={selectedBook}
           onBack={handleBack}
           onEditBook={(data) => handleEditBook(selectedBook.id, data)}
-          onAddMovement={(m) => handleAddMovement(selectedBook.id, m)}
+          onAddMovement={(movement) => handleAddMovement(selectedBook.id, movement)}
         />
       )}
     </AnimatePresence>

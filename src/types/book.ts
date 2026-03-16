@@ -1,4 +1,12 @@
-export type TipoEvento = 'ALTA' | 'ENVIO' | 'AJUSTE_STOCK' | 'INGRESO' | 'MODIFICACION' | 'DEVOLUCION' | 'CORRECCION' | 'BAJA';
+export type TipoEvento =
+  | 'ALTA'
+  | 'ENVIO'
+  | 'AJUSTE_STOCK'
+  | 'INGRESO'
+  | 'MODIFICACION'
+  | 'DEVOLUCION'
+  | 'CORRECCION'
+  | 'BAJA';
 
 export interface EventoHistorial {
   id: string;
@@ -13,7 +21,7 @@ export interface EventoHistorial {
   observaciones?: string;
 }
 
-export interface Libro {
+export interface LibroResumen {
   id: string;
   codigo: string;
   titulo: string;
@@ -23,11 +31,16 @@ export interface Libro {
   categoria: string;
   descripcion: string;
   stock_actual: number;
+  stock_minimo: number;
   ubicacion: string;
   estado: 'activo' | 'inactivo' | 'bajo_stock';
   fecha_alta: string;
   fecha_ultima_modificacion: string;
   ultima_provincia: string;
+  imagen?: string;
+}
+
+export interface LibroDetalle extends LibroResumen {
   historial: EventoHistorial[];
 }
 
@@ -38,7 +51,10 @@ export interface Usuario {
   rol: 'admin' | 'operador' | 'auditor';
 }
 
-export const EVENT_CONFIG: Record<TipoEvento, { label: string; colorClass: string; bgClass: string; dotClass: string }> = {
+export const EVENT_CONFIG: Record<
+  TipoEvento,
+  { label: string; colorClass: string; bgClass: string; dotClass: string }
+> = {
   ALTA: { label: 'Alta', colorClass: 'text-emerald-700', bgClass: 'bg-emerald-50', dotClass: 'bg-emerald-500' },
   ENVIO: { label: 'Envío', colorClass: 'text-blue-700', bgClass: 'bg-blue-50', dotClass: 'bg-blue-500' },
   AJUSTE_STOCK: { label: 'Ajuste Stock', colorClass: 'text-amber-700', bgClass: 'bg-amber-50', dotClass: 'bg-amber-500' },

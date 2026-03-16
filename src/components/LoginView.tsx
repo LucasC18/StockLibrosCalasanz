@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookMarked, Eye, EyeOff } from 'lucide-react';
+import { api } from '@/lib/api';
+import { Usuario } from '@/types/book';
 
 interface LoginViewProps {
-  onLogin: () => void;
+  onLogin: (token: string, user: Usuario) => void;
 }
 
 const LoginView = ({ onLogin }: LoginViewProps) => {
@@ -13,7 +15,7 @@ const LoginView = ({ onLogin }: LoginViewProps) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -22,16 +24,20 @@ const LoginView = ({ onLogin }: LoginViewProps) => {
       return;
     }
 
-    setLoading(true);
-    // Simulate auth
-    setTimeout(() => {
-      if (email === 'admin@editorial.com' && password === 'admin123') {
-        onLogin();
-      } else {
-        setError('Credenciales inválidas. Intentá con admin@editorial.com / admin123');
-        setLoading(false);
-      }
-    }, 800);
+    try {
+      setLoading(true);
+
+      const result = await api.login(email, password);
+
+      localStorage.setItem('token', result.accessToken);
+      localStorage.setItem('user', JSON.stringify(result.user));
+
+      onLogin(result.accessToken, result.user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,9 +71,11 @@ const LoginView = ({ onLogin }: LoginViewProps) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-11 px-4 rounded-lg bg-secondary border-none ring-1 ring-border focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
-                placeholder="admin@editorial.com"
+                placeholder="tuemail@editorial.com"
+                autoComplete="email"
               />
             </div>
+
             <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Contraseña
@@ -79,11 +87,13 @@ const LoginView = ({ onLogin }: LoginViewProps) => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-11 px-4 pr-11 rounded-lg bg-secondary border-none ring-1 ring-border focus:ring-2 focus:ring-primary transition-all outline-none text-sm"
                   placeholder="••••••••"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

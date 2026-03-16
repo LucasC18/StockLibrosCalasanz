@@ -1,5 +1,11 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { TipoEvento, EVENT_CONFIG } from '@/types/book';
 
 interface MovementDialogProps {
@@ -17,13 +23,37 @@ interface MovementDialogProps {
 }
 
 const PROVINCIAS = [
-  'Buenos Aires', 'Córdoba', 'Santa Fe', 'Mendoza', 'Tucumán', 'Salta', 'Entre Ríos',
-  'Misiones', 'Chaco', 'Corrientes', 'Santiago del Estero', 'San Juan', 'Jujuy',
-  'Río Negro', 'Neuquén', 'Formosa', 'Chubut', 'San Luis', 'Catamarca', 'La Rioja',
-  'La Pampa', 'Santa Cruz', 'Tierra del Fuego', 'Rosario',
+  'Buenos Aires',
+  'Córdoba',
+  'Santa Fe',
+  'Mendoza',
+  'Tucumán',
+  'Salta',
+  'Entre Ríos',
+  'Misiones',
+  'Chaco',
+  'Corrientes',
+  'Santiago del Estero',
+  'San Juan',
+  'Jujuy',
+  'Río Negro',
+  'Neuquén',
+  'Formosa',
+  'Chubut',
+  'San Luis',
+  'Catamarca',
+  'La Rioja',
+  'La Pampa',
+  'Santa Cruz',
+  'Tierra del Fuego',
+  'Rosario',
 ];
 
-const TIPOS_MOVIMIENTO: { value: TipoEvento; label: string; direction: 'in' | 'out' | 'neutral' }[] = [
+const TIPOS_MOVIMIENTO: {
+  value: TipoEvento;
+  label: string;
+  direction: 'in' | 'out' | 'neutral';
+}[] = [
   { value: 'INGRESO', label: 'Ingreso de Stock', direction: 'in' },
   { value: 'ENVIO', label: 'Envío a Provincia', direction: 'out' },
   { value: 'DEVOLUCION', label: 'Devolución', direction: 'in' },
@@ -33,7 +63,13 @@ const TIPOS_MOVIMIENTO: { value: TipoEvento; label: string; direction: 'in' | 'o
   { value: 'BAJA', label: 'Baja Lógica', direction: 'out' },
 ];
 
-const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: MovementDialogProps) => {
+const MovementDialog = ({
+  open,
+  onClose,
+  onSave,
+  bookTitle,
+  currentStock,
+}: MovementDialogProps) => {
   const [tipo, setTipo] = useState<TipoEvento>('INGRESO');
   const [cantidad, setCantidad] = useState(0);
   const [descripcion, setDescripcion] = useState('');
@@ -41,39 +77,70 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
   const [observaciones, setObservaciones] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (open) {
+      setTipo('INGRESO');
+      setCantidad(0);
+      setDescripcion('');
+      setProvincia('');
+      setObservaciones('');
+      setErrors({});
+    }
+  }, [open]);
+
   const selectedTipo = TIPOS_MOVIMIENTO.find((t) => t.value === tipo)!;
   const config = EVENT_CONFIG[tipo];
 
-  const newStock =
-    selectedTipo.direction === 'in'
-      ? currentStock + cantidad
-      : selectedTipo.direction === 'out'
-      ? currentStock - cantidad
-      : currentStock + cantidad; // neutral allows positive or negative
+  const stockCambio =
+    selectedTipo.direction === 'out'
+      ? -cantidad
+      : cantidad;
+
+  const newStock = currentStock + stockCambio;
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!descripcion.trim()) errs.descripcion = 'La descripción es obligatoria.';
-    if (selectedTipo.direction !== 'neutral' && cantidad <= 0) errs.cantidad = 'La cantidad debe ser mayor a 0.';
-    if (selectedTipo.direction === 'out' && cantidad > currentStock)
+
+    if (!descripcion.trim()) {
+      errs.descripcion = 'La descripción es obligatoria.';
+    }
+
+    if (selectedTipo.direction === 'neutral') {
+      if (cantidad === 0) {
+        errs.cantidad = 'Ingresá una variación distinta de 0.';
+      }
+    } else {
+      if (cantidad <= 0) {
+        errs.cantidad = 'La cantidad debe ser mayor a 0.';
+      }
+    }
+
+    if (selectedTipo.direction === 'out' && cantidad > currentStock) {
       errs.cantidad = `No hay suficiente stock (disponible: ${currentStock}).`;
-    if (tipo === 'ENVIO' && !provincia) errs.provincia = 'Seleccioná una provincia de destino.';
+    }
+
+    if (tipo === 'ENVIO' && !provincia) {
+      errs.provincia = 'Seleccioná una provincia de destino.';
+    }
+
     return errs;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
+
     onSave({
       tipo_evento: tipo,
-      descripcion_evento: descripcion,
-      stock_cambio: selectedTipo.direction === 'out' ? -cantidad : cantidad,
+      descripcion_evento: descripcion.trim(),
+      stock_cambio: stockCambio,
       provincia_destino: provincia || undefined,
-      observaciones: observaciones || undefined,
+      observaciones: observaciones.trim() || undefined,
     });
   };
 
@@ -88,7 +155,6 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
-          {/* Tipo de movimiento */}
           <div className="space-y-2">
             <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Tipo de Movimiento
@@ -96,12 +162,15 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
             <div className="grid grid-cols-2 gap-2">
               {TIPOS_MOVIMIENTO.map((t) => {
                 const tc = EVENT_CONFIG[t.value];
+
                 return (
                   <button
                     key={t.value}
                     type="button"
                     onClick={() => {
                       setTipo(t.value);
+                      setCantidad(0);
+                      setProvincia('');
                       setErrors({});
                     }}
                     className={`px-3 py-2 rounded-lg text-xs font-medium text-left transition-all ${
@@ -117,11 +186,10 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
             </div>
           </div>
 
-          {/* Cantidad */}
-          {selectedTipo.direction !== 'neutral' || tipo === 'AJUSTE_STOCK' ? (
+          {(selectedTipo.direction !== 'neutral' || tipo === 'AJUSTE_STOCK' || tipo === 'CORRECCION') && (
             <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Cantidad
+                {selectedTipo.direction === 'neutral' ? 'Variación de Stock' : 'Cantidad'}
               </label>
               <input
                 type="number"
@@ -135,18 +203,20 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
                   });
                 }}
                 className="w-full h-10 px-3 rounded-lg bg-secondary ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-sm"
-                min="0"
+                min={selectedTipo.direction === 'neutral' ? undefined : '0'}
               />
               {errors.cantidad && <p className="text-xs text-destructive">{errors.cantidad}</p>}
-              {cantidad > 0 && (
+              {cantidad !== 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Stock resultante: <strong className={newStock < 0 ? 'text-destructive' : 'text-foreground'}>{newStock} u.</strong>
+                  Stock resultante:{' '}
+                  <strong className={newStock < 0 ? 'text-destructive' : 'text-foreground'}>
+                    {newStock} u.
+                  </strong>
                 </p>
               )}
             </div>
-          ) : null}
+          )}
 
-          {/* Provincia */}
           {(tipo === 'ENVIO' || tipo === 'DEVOLUCION') && (
             <div className="space-y-2">
               <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -166,14 +236,15 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
               >
                 <option value="">Seleccionar...</option>
                 {PROVINCIAS.map((p) => (
-                  <option key={p} value={p}>{p}</option>
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
                 ))}
               </select>
               {errors.provincia && <p className="text-xs text-destructive">{errors.provincia}</p>}
             </div>
           )}
 
-          {/* Descripción */}
           <div className="space-y-2">
             <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Descripción del Movimiento
@@ -194,7 +265,6 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
             {errors.descripcion && <p className="text-xs text-destructive">{errors.descripcion}</p>}
           </div>
 
-          {/* Observaciones */}
           <div className="space-y-2">
             <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               Observaciones <span className="normal-case font-normal">(opcional)</span>
@@ -207,7 +277,6 @@ const MovementDialog = ({ open, onClose, onSave, bookTitle, currentStock }: Move
             />
           </div>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
