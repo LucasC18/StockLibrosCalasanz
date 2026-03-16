@@ -1,18 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Search,
-  Filter,
-  ChevronRight,
-  BookOpen,
-  AlertTriangle,
-  Send,
-  Activity,
-  LogOut,
-  X,
-  Plus,
-  Pencil,
-  Trash2,
+  Search, Filter, ChevronRight, BookOpen, AlertTriangle,
+  Send, Activity, LogOut, X, Plus, Pencil, Trash2,
 } from 'lucide-react';
 import { LibroResumen, Usuario } from '@/types/book';
 import { DashboardSummary } from '@/lib/api';
@@ -30,20 +20,14 @@ interface DashboardProps {
 }
 
 const estadoConfig = {
-  activo: { label: 'Activo', className: 'bg-emerald-50 text-emerald-700' },
-  bajo_stock: { label: 'Stock Bajo', className: 'bg-amber-50 text-amber-700' },
-  inactivo: { label: 'Inactivo', className: 'bg-slate-100 text-slate-500' },
+  activo:     { label: 'Activo',     dot: '#16a34a', bg: '#f0fdf4', color: '#15803d' },
+  bajo_stock: { label: 'Stock Bajo', dot: '#d97706', bg: '#fffbeb', color: '#b45309' },
+  inactivo:   { label: 'Inactivo',   dot: '#94a3b8', bg: '#f1f5f9', color: '#64748b' },
 };
 
 const Dashboard = ({
-  books,
-  summary,
-  user,
-  onSelectBook,
-  onLogout,
-  onAddBook,
-  onEditBook,
-  onDeleteBook,
+  books, summary, user, onSelectBook, onLogout,
+  onAddBook, onEditBook, onDeleteBook,
 }: DashboardProps) => {
   const [search, setSearch] = useState('');
   const [filterEstado, setFilterEstado] = useState<string>('todos');
@@ -52,380 +36,852 @@ const Dashboard = ({
   const [editingBook, setEditingBook] = useState<LibroResumen | null>(null);
   const [deletingBook, setDeletingBook] = useState<LibroResumen | null>(null);
 
-  const filtered = useMemo(() => {
-    return books.filter((b) => {
-      const matchSearch =
-        !search ||
-        b.titulo.toLowerCase().includes(search.toLowerCase()) ||
-        b.autor.toLowerCase().includes(search.toLowerCase()) ||
-        b.codigo.toLowerCase().includes(search.toLowerCase()) ||
-        b.isbn.toLowerCase().includes(search.toLowerCase());
-
-      const matchEstado = filterEstado === 'todos' || b.estado === filterEstado;
-
-      return matchSearch && matchEstado;
-    });
-  }, [books, search, filterEstado]);
-
-  const totalLibros = summary.totalBooks;
-  const stockBajo = summary.lowStockBooks;
-  const enviosRecientes = summary.recentShipments;
-  const movimientosHoy = summary.todayMovements;
+  const filtered = useMemo(() => books.filter((b) => {
+    const matchSearch = !search ||
+      b.titulo.toLowerCase().includes(search.toLowerCase()) ||
+      b.autor.toLowerCase().includes(search.toLowerCase()) ||
+      b.codigo.toLowerCase().includes(search.toLowerCase()) ||
+      b.isbn.toLowerCase().includes(search.toLowerCase());
+    const matchEstado = filterEstado === 'todos' || b.estado === filterEstado;
+    return matchSearch && matchEstado;
+  }), [books, search, filterEstado]);
 
   const kpis = [
-    { label: 'Total Libros', value: totalLibros, icon: BookOpen, variant: 'default' as const },
-    { label: 'Stock Bajo', value: stockBajo, icon: AlertTriangle, variant: 'warning' as const },
-    { label: 'Envíos Recientes', value: enviosRecientes, icon: Send, variant: 'default' as const },
-    { label: 'Movimientos Hoy', value: movimientosHoy, icon: Activity, variant: 'default' as const },
+    { label: 'Total Libros',      value: summary.totalBooks,       icon: BookOpen,      warning: false },
+    { label: 'Stock Bajo',        value: summary.lowStockBooks,    icon: AlertTriangle, warning: true  },
+    { label: 'Envíos Recientes',  value: summary.recentShipments,  icon: Send,          warning: false },
+    { label: 'Movimientos Hoy',   value: summary.todayMovements,   icon: Activity,      warning: false },
   ];
 
+  const filterLabels: Record<string, string> = {
+    todos: 'Todos', activo: 'Activo', bajo_stock: 'Stock Bajo', inactivo: 'Inactivo',
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-svh bg-background"
-    >
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <BookOpen className="text-primary-foreground" size={16} />
-            </div>
-            <div>
-              <span className="font-semibold text-foreground text-sm block">Depósito Norte</span>
-              {user && (
-                <span className="text-xs text-muted-foreground">
-                  {user.nombre} • {user.rol}
-                </span>
-              )}
-            </div>
-          </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap');
 
-          <button
-            onClick={onLogout}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <LogOut size={16} />
-            <span className="hidden sm:inline">Cerrar sesión</span>
-          </button>
-        </div>
-      </header>
+        .db-root {
+          min-height: 100svh;
+          background: #f7f4f0;
+          font-family: 'Lato', sans-serif;
+        }
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        <div className="flex justify-between items-start flex-wrap gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Inventario General
-            </h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Monitoreo de existencias y movimientos en tiempo real.
-            </p>
-          </div>
+        /* ── Navbar ── */
+        .db-nav {
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          background: #6b1228;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
 
-          <button
-            onClick={() => setShowAddDialog(true)}
-            className="h-10 px-5 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2"
-          >
-            <Plus size={16} /> Nuevo Libro
-          </button>
-        </div>
+        .db-nav-inner {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 28px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {kpis.map((kpi) => (
-            <div
-              key={kpi.label}
-              className={`px-5 py-4 rounded-xl shadow-card ${
-                kpi.variant === 'warning'
-                  ? 'bg-amber-50 ring-1 ring-amber-200'
-                  : 'bg-card ring-1 ring-border'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <kpi.icon
-                  size={14}
-                  className={
-                    kpi.variant === 'warning' ? 'text-amber-500' : 'text-muted-foreground'
-                  }
-                />
-                <span
-                  className={`text-xs font-medium ${
-                    kpi.variant === 'warning' ? 'text-amber-600' : 'text-muted-foreground'
-                  }`}
-                >
-                  {kpi.label}
-                </span>
+        .db-nav-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .db-nav-icon {
+          width: 34px; height: 34px;
+          border-radius: 9px;
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.2);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .db-nav-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 15px;
+          font-weight: 600;
+          color: #fff;
+          line-height: 1.2;
+        }
+
+        .db-nav-sub {
+          font-size: 11px;
+          color: rgba(255,255,255,0.55);
+          font-weight: 300;
+          line-height: 1;
+        }
+
+        .db-nav-logout {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          color: rgba(255,255,255,0.65);
+          background: none;
+          border: 1px solid rgba(255,255,255,0.18);
+          border-radius: 8px;
+          padding: 6px 14px;
+          cursor: pointer;
+          transition: background 0.15s, color 0.15s;
+        }
+
+        .db-nav-logout:hover {
+          background: rgba(255,255,255,0.1);
+          color: #fff;
+        }
+
+        /* ── Page body ── */
+        .db-body {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 32px 28px 48px;
+        }
+
+        /* ── Page title row ── */
+        .db-title-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 28px;
+        }
+
+        .db-title-row h2 {
+          font-family: 'Playfair Display', serif;
+          font-size: 26px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 4px;
+          line-height: 1.2;
+        }
+
+        .db-title-row p {
+          font-size: 13px;
+          color: #8a8a8a;
+          margin: 0;
+          font-weight: 300;
+        }
+
+        .db-btn-add {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          height: 40px;
+          padding: 0 20px;
+          background: #6b1228;
+          color: #fff;
+          font-family: 'Lato', sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(107,18,40,0.28);
+          transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+          white-space: nowrap;
+        }
+
+        .db-btn-add:hover { background: #7d1630; box-shadow: 0 6px 18px rgba(107,18,40,0.36); }
+        .db-btn-add:active { transform: scale(0.985); }
+
+        /* ── KPI grid ── */
+        .db-kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 14px;
+          margin-bottom: 28px;
+        }
+
+        @media (max-width: 860px) { .db-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .db-kpi-grid { grid-template-columns: 1fr; } }
+
+        .db-kpi {
+          background: #fff;
+          border-radius: 14px;
+          padding: 20px 22px;
+          border: 1px solid #e8ddd8;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .db-kpi.warning {
+          background: #fff8f0;
+          border-color: #f0d8c0;
+        }
+
+        .db-kpi-accent {
+          position: absolute;
+          top: 0; left: 0;
+          width: 3px; height: 100%;
+          background: #6b1228;
+          border-radius: 14px 0 0 14px;
+        }
+
+        .db-kpi.warning .db-kpi-accent { background: #d97706; }
+
+        .db-kpi-top {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          margin-bottom: 10px;
+        }
+
+        .db-kpi-icon {
+          color: #6b1228;
+        }
+
+        .db-kpi.warning .db-kpi-icon { color: #d97706; }
+
+        .db-kpi-label {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.13em;
+          text-transform: uppercase;
+          color: #7a6a64;
+        }
+
+        .db-kpi.warning .db-kpi-label { color: #92600a; }
+
+        .db-kpi-value {
+          font-family: 'Playfair Display', serif;
+          font-size: 30px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1;
+        }
+
+        .db-kpi.warning .db-kpi-value { color: #92600a; }
+
+        /* ── Search & filter bar ── */
+        .db-search-row {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+        }
+
+        .db-search-wrap {
+          flex: 1;
+          min-width: 200px;
+          position: relative;
+        }
+
+        .db-search-icon {
+          position: absolute;
+          left: 13px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #a89890;
+          pointer-events: none;
+        }
+
+        .db-search-input {
+          width: 100%;
+          height: 40px;
+          padding: 0 14px 0 40px;
+          font-family: 'Lato', sans-serif;
+          font-size: 13px;
+          color: #1a1a1a;
+          background: #fff;
+          border: 1.5px solid #e6ddd8;
+          border-radius: 10px;
+          outline: none;
+          transition: border-color 0.18s, box-shadow 0.18s;
+          box-sizing: border-box;
+        }
+
+        .db-search-input::placeholder { color: #c0b0a8; }
+
+        .db-search-input:focus {
+          border-color: #6b1228;
+          box-shadow: 0 0 0 3px rgba(107,18,40,0.1);
+        }
+
+        .db-filter-btn {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          height: 40px;
+          padding: 0 16px;
+          background: #fff;
+          border: 1.5px solid #e6ddd8;
+          border-radius: 10px;
+          font-family: 'Lato', sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          color: #5a5a5a;
+          cursor: pointer;
+          transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+
+        .db-filter-btn:hover, .db-filter-btn.active {
+          background: #f5eeeb;
+          border-color: #c9b8b0;
+          color: #6b1228;
+        }
+
+        /* Filter chips */
+        .db-filter-chips {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          align-items: center;
+          margin-bottom: 20px;
+          padding: 14px 16px;
+          background: #fff;
+          border: 1px solid #e6ddd8;
+          border-radius: 12px;
+        }
+
+        .db-filter-chip {
+          height: 30px;
+          padding: 0 14px;
+          border-radius: 99px;
+          font-family: 'Lato', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          cursor: pointer;
+          border: 1.5px solid #e6ddd8;
+          background: #fff;
+          color: #7a6a64;
+          transition: all 0.15s;
+        }
+
+        .db-filter-chip:hover {
+          border-color: #6b1228;
+          color: #6b1228;
+        }
+
+        .db-filter-chip.active {
+          background: #6b1228;
+          border-color: #6b1228;
+          color: #fff;
+        }
+
+        .db-clear-btn {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #a89890;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px 6px;
+          border-radius: 6px;
+          transition: color 0.15s;
+        }
+
+        .db-clear-btn:hover { color: #6b1228; }
+
+        /* ── Table card ── */
+        .db-table-card {
+          background: #fff;
+          border-radius: 16px;
+          border: 1px solid #e8ddd8;
+          overflow: hidden;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .db-table-card table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .db-table-card thead tr {
+          background: #f7f4f0;
+          border-bottom: 1px solid #e8ddd8;
+        }
+
+        .db-table-card th {
+          padding: 12px 20px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #7a6a64;
+          text-align: left;
+          white-space: nowrap;
+        }
+
+        .db-table-card th.right { text-align: right; }
+
+        .db-table-card tbody tr {
+          border-bottom: 1px solid #f0ebe6;
+          transition: background 0.12s;
+          cursor: pointer;
+        }
+
+        .db-table-card tbody tr:last-child { border-bottom: none; }
+        .db-table-card tbody tr:hover { background: #faf7f5; }
+
+        .db-table-card td {
+          padding: 14px 20px;
+          font-size: 13px;
+          color: #3a3a3a;
+          vertical-align: middle;
+        }
+
+        /* Book cell */
+        .db-book-cell {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .db-book-thumb {
+          width: 30px; height: 40px;
+          border-radius: 5px;
+          object-fit: cover;
+          border: 1px solid #e6ddd8;
+          flex-shrink: 0;
+        }
+
+        .db-book-title {
+          font-weight: 700;
+          color: #1a1a1a;
+          font-size: 13px;
+          line-height: 1.3;
+        }
+
+        .db-book-meta {
+          font-size: 11px;
+          color: #a89890;
+          margin-top: 2px;
+          font-weight: 300;
+        }
+
+        .db-isbn {
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+          color: #8a8a8a;
+          letter-spacing: 0.02em;
+        }
+
+        .db-stock {
+          font-weight: 700;
+          font-size: 14px;
+        }
+
+        .db-stock.low { color: #d97706; }
+        .db-stock.ok  { color: #1a1a1a; }
+
+        /* Estado badge */
+        .db-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 10px;
+          border-radius: 99px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
+
+        .db-badge-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        /* Actions */
+        .db-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 2px;
+          opacity: 0;
+          transition: opacity 0.15s;
+        }
+
+        tr:hover .db-actions { opacity: 1; }
+
+        .db-action-btn {
+          width: 30px; height: 30px;
+          border-radius: 7px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #a89890;
+          transition: background 0.12s, color 0.12s;
+        }
+
+        .db-action-btn:hover       { background: #f0ebe6; color: #6b1228; }
+        .db-action-btn.danger:hover { background: #fdf2f4; color: #b91c1c; }
+
+        /* Empty state */
+        .db-empty {
+          padding: 64px 20px;
+          text-align: center;
+          color: #a89890;
+          font-size: 13px;
+          font-weight: 300;
+        }
+
+        .db-empty strong {
+          display: block;
+          font-size: 15px;
+          font-weight: 700;
+          color: #5a5a5a;
+          margin-bottom: 6px;
+        }
+
+        /* ── Delete confirm modal ── */
+        .db-modal-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          background: rgba(30,10,15,0.45);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+
+        .db-modal {
+          background: #fff;
+          border-radius: 18px;
+          padding: 32px;
+          max-width: 400px;
+          width: 100%;
+          box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+          border: 1px solid #e8ddd8;
+        }
+
+        .db-modal-icon {
+          width: 44px; height: 44px;
+          border-radius: 12px;
+          background: #fdf2f4;
+          border: 1px solid #f0c8d0;
+          display: flex; align-items: center; justify-content: center;
+          margin-bottom: 18px;
+        }
+
+        .db-modal h3 {
+          font-family: 'Playfair Display', serif;
+          font-size: 18px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 10px;
+        }
+
+        .db-modal p {
+          font-size: 13px;
+          color: #6a6a6a;
+          line-height: 1.65;
+          margin: 0 0 24px;
+          font-weight: 300;
+        }
+
+        .db-modal p strong { font-weight: 700; color: #1a1a1a; }
+
+        .db-modal-footer {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+
+        .db-modal-cancel {
+          height: 38px;
+          padding: 0 18px;
+          border-radius: 9px;
+          font-family: 'Lato', sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          color: #7a6a64;
+          background: #fff;
+          border: 1.5px solid #e6ddd8;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+
+        .db-modal-cancel:hover { background: #f0ebe6; }
+
+        .db-modal-delete {
+          height: 38px;
+          padding: 0 20px;
+          border-radius: 9px;
+          font-family: 'Lato', sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          color: #fff;
+          background: #b91c1c;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(185,28,28,0.28);
+          transition: background 0.15s, transform 0.1s;
+        }
+
+        .db-modal-delete:hover { background: #991b1b; }
+        .db-modal-delete:active { transform: scale(0.985); }
+      `}</style>
+
+      <motion.div
+        className="db-root"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        {/* Navbar */}
+        <header className="db-nav">
+          <div className="db-nav-inner">
+            <div className="db-nav-brand">
+              <div className="db-nav-icon">
+                <BookOpen color="#fff" size={16} />
               </div>
-              <p
-                className={`text-2xl font-bold ${
-                  kpi.variant === 'warning' ? 'text-amber-700' : 'text-foreground'
-                }`}
-              >
-                {kpi.value}
-              </p>
+              <div>
+                <div className="db-nav-title">Depósito Norte</div>
+                {user && (
+                  <div className="db-nav-sub">{user.nombre} · {user.rol}</div>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
 
-        <div className="flex gap-3 flex-col sm:flex-row">
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              size={18}
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-lg bg-card ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all text-sm"
-              placeholder="Buscar por título, ISBN, autor o código..."
-            />
+            <button className="db-nav-logout" onClick={onLogout}>
+              <LogOut size={13} />
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="db-body">
+
+          {/* Title row */}
+          <div className="db-title-row">
+            <div>
+              <h2>Inventario General</h2>
+              <p>Monitoreo de existencias y movimientos en tiempo real.</p>
+            </div>
+            <button className="db-btn-add" onClick={() => setShowAddDialog(true)}>
+              <Plus size={15} /> Nuevo Libro
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="h-10 px-4 flex items-center gap-2 bg-card ring-1 ring-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors"
-          >
-            <Filter size={16} /> Filtros
-          </button>
-        </div>
-
-        {showFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="flex gap-2 flex-wrap"
-          >
-            {['todos', 'activo', 'bajo_stock', 'inactivo'].map((estado) => (
-              <button
-                key={estado}
-                onClick={() => setFilterEstado(estado)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  filterEstado === estado
-                    ? 'bg-foreground text-background'
-                    : 'bg-card ring-1 ring-border text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {estado === 'todos'
-                  ? 'Todos'
-                  : estado === 'bajo_stock'
-                    ? 'Stock Bajo'
-                    : estado.charAt(0).toUpperCase() + estado.slice(1)}
-              </button>
+          {/* KPIs */}
+          <div className="db-kpi-grid">
+            {kpis.map((kpi) => (
+              <div key={kpi.label} className={`db-kpi${kpi.warning ? ' warning' : ''}`}>
+                <div className="db-kpi-accent" />
+                <div className="db-kpi-top">
+                  <kpi.icon size={13} className="db-kpi-icon" />
+                  <span className="db-kpi-label">{kpi.label}</span>
+                </div>
+                <div className="db-kpi-value">{kpi.value}</div>
+              </div>
             ))}
+          </div>
 
-            {filterEstado !== 'todos' && (
-              <button
-                onClick={() => setFilterEstado('todos')}
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-              >
-                <X size={12} /> Limpiar
-              </button>
-            )}
-          </motion.div>
-        )}
+          {/* Search & filter */}
+          <div className="db-search-row">
+            <div className="db-search-wrap">
+              <Search size={16} className="db-search-icon" />
+              <input
+                className="db-search-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por título, ISBN, autor o código..."
+              />
+            </div>
+            <button
+              className={`db-filter-btn${showFilters ? ' active' : ''}`}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter size={14} /> Filtros
+            </button>
+          </div>
 
-        <div className="bg-card rounded-xl shadow-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-secondary/50 border-b border-border">
-                <tr>
-                  {['Libro', 'ISBN', 'Stock', 'Última Prov.', 'Estado', 'Acciones'].map((h) => (
-                    <th
-                      key={h}
-                      className={`px-6 py-3.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider ${
-                        h === 'Acciones' ? 'text-right' : ''
-                      }`}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+          {showFilters && (
+            <motion.div
+              className="db-filter-chips"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+            >
+              {['todos', 'activo', 'bajo_stock', 'inactivo'].map((estado) => (
+                <button
+                  key={estado}
+                  className={`db-filter-chip${filterEstado === estado ? ' active' : ''}`}
+                  onClick={() => setFilterEstado(estado)}
+                >
+                  {filterLabels[estado]}
+                </button>
+              ))}
+              {filterEstado !== 'todos' && (
+                <button className="db-clear-btn" onClick={() => setFilterEstado('todos')}>
+                  <X size={11} /> Limpiar
+                </button>
+              )}
+            </motion.div>
+          )}
 
-              <tbody className="divide-y divide-border">
-                {filtered.length === 0 ? (
+          {/* Table */}
+          <div className="db-table-card">
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="px-6 py-12 text-center text-sm text-muted-foreground"
-                    >
-                      No se encontraron libros que coincidan con los filtros aplicados.
-                    </td>
+                    {['Libro', 'ISBN', 'Stock', 'Última Prov.', 'Estado', 'Acciones'].map((h) => (
+                      <th key={h} className={h === 'Acciones' ? 'right' : ''}>{h}</th>
+                    ))}
                   </tr>
-                ) : (
-                  filtered.map((book) => {
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: 0, cursor: 'default' }}>
+                        <div className="db-empty">
+                          <strong>Sin resultados</strong>
+                          No se encontraron libros con los filtros aplicados.
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filtered.map((book) => {
                     const est = estadoConfig[book.estado];
-
                     return (
-                      <tr key={book.id} className="group hover:bg-secondary/30 transition-colors">
-                        <td
-                          className="px-6 py-4 cursor-pointer"
-                          onClick={() => onSelectBook(book)}
-                        >
-                          <div className="flex items-center gap-3">
-                            {book.imagen ? (
-                              <img
-                                src={book.imagen}
-                                alt={book.titulo}
-                                className="w-8 h-10 rounded object-cover ring-1 ring-border"
-                              />
-                            ) : null}
-
+                      <tr key={book.id}>
+                        <td onClick={() => onSelectBook(book)}>
+                          <div className="db-book-cell">
+                            {book.imagen && (
+                              <img src={book.imagen} alt={book.titulo} className="db-book-thumb" />
+                            )}
                             <div>
-                              <div className="font-medium text-foreground text-sm">
-                                {book.titulo}
-                              </div>
-                              <div className="text-xs text-muted-foreground mt-0.5">
-                                {book.autor} • {book.codigo}
-                              </div>
+                              <div className="db-book-title">{book.titulo}</div>
+                              <div className="db-book-meta">{book.autor} · {book.codigo}</div>
                             </div>
                           </div>
                         </td>
 
-                        <td
-                          className="px-6 py-4 text-sm font-mono text-muted-foreground cursor-pointer"
-                          onClick={() => onSelectBook(book)}
-                        >
-                          {book.isbn}
+                        <td onClick={() => onSelectBook(book)}>
+                          <span className="db-isbn">{book.isbn}</span>
                         </td>
 
-                        <td
-                          className="px-6 py-4 cursor-pointer"
-                          onClick={() => onSelectBook(book)}
-                        >
-                          <span
-                            className={`text-sm font-semibold ${
-                              book.stock_actual <= 10 ? 'text-amber-600' : 'text-foreground'
-                            }`}
-                          >
+                        <td onClick={() => onSelectBook(book)}>
+                          <span className={`db-stock ${book.stock_actual <= 10 ? 'low' : 'ok'}`}>
                             {book.stock_actual} u.
                           </span>
                         </td>
 
-                        <td
-                          className="px-6 py-4 text-sm text-muted-foreground cursor-pointer"
-                          onClick={() => onSelectBook(book)}
-                        >
+                        <td onClick={() => onSelectBook(book)} style={{ color: '#8a8a8a', fontWeight: 300 }}>
                           {book.ultima_provincia}
                         </td>
 
-                        <td
-                          className="px-6 py-4 cursor-pointer"
-                          onClick={() => onSelectBook(book)}
-                        >
+                        <td onClick={() => onSelectBook(book)}>
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${est.className}`}
+                            className="db-badge"
+                            style={{ background: est.bg, color: est.color }}
                           >
+                            <span className="db-badge-dot" style={{ background: est.dot }} />
                             {est.label}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <td>
+                          <div className="db-actions">
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingBook(book);
-                              }}
-                              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                              className="db-action-btn"
                               title="Editar"
+                              onClick={(e) => { e.stopPropagation(); setEditingBook(book); }}
                             >
-                              <Pencil size={14} />
+                              <Pencil size={13} />
                             </button>
-
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeletingBook(book);
-                              }}
-                              className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                              className="db-action-btn danger"
                               title="Eliminar"
+                              onClick={(e) => { e.stopPropagation(); setDeletingBook(book); }}
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={13} />
                             </button>
-
                             <button
-                              onClick={() => onSelectBook(book)}
-                              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+                              className="db-action-btn"
                               title="Ver historial"
+                              onClick={() => onSelectBook(book)}
                             >
-                              <ChevronRight size={16} />
+                              <ChevronRight size={14} />
                             </button>
                           </div>
                         </td>
                       </tr>
                     );
-                  })
-                )}
-              </tbody>
-            </table>
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </div>
 
+        </div>
+      </motion.div>
+
+      {/* Add dialog */}
       {showAddDialog && (
         <BookFormDialog
           open={showAddDialog}
           onClose={() => setShowAddDialog(false)}
-          onSave={(data) => {
-            onAddBook(data);
-            setShowAddDialog(false);
-          }}
+          onSave={(data) => { onAddBook(data); setShowAddDialog(false); }}
         />
       )}
 
+      {/* Edit dialog */}
       {editingBook && (
         <BookFormDialog
           open={!!editingBook}
           onClose={() => setEditingBook(null)}
           book={editingBook}
-          onSave={(data) => {
-            onEditBook(editingBook.id, data);
-            setEditingBook(null);
-          }}
+          onSave={(data) => { onEditBook(editingBook.id, data); setEditingBook(null); }}
         />
       )}
 
+      {/* Delete confirm */}
       {deletingBook && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm"
-          onClick={() => setDeletingBook(null)}
-        >
+        <div className="db-modal-overlay" onClick={() => setDeletingBook(null)}>
           <motion.div
+            className="db-modal"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-card p-6 rounded-xl shadow-elevated max-w-sm w-full mx-4 space-y-4"
+            transition={{ duration: 0.18 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-foreground">Eliminar libro</h3>
-            <p className="text-sm text-muted-foreground">
-              ¿Estás seguro de que querés eliminar <strong>"{deletingBook.titulo}"</strong>?
-              Esta acción no se puede deshacer.
+            <div className="db-modal-icon">
+              <Trash2 size={18} color="#b91c1c" />
+            </div>
+            <h3>Eliminar libro</h3>
+            <p>
+              ¿Estás seguro de que querés eliminar{' '}
+              <strong>"{deletingBook.titulo}"</strong>?
+              Esta acción no se puede deshacer y eliminará todo el historial asociado.
             </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeletingBook(null)}
-                className="h-9 px-4 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-              >
+            <div className="db-modal-footer">
+              <button className="db-modal-cancel" onClick={() => setDeletingBook(null)}>
                 Cancelar
               </button>
-
               <button
-                onClick={() => {
-                  onDeleteBook(deletingBook.id);
-                  setDeletingBook(null);
-                }}
-                className="h-9 px-4 rounded-lg text-sm font-medium bg-destructive text-destructive-foreground hover:opacity-90 transition-all"
+                className="db-modal-delete"
+                onClick={() => { onDeleteBook(deletingBook.id); setDeletingBook(null); }}
               >
-                Eliminar
+                Sí, eliminar
               </button>
             </div>
           </motion.div>
         </div>
       )}
-    </motion.div>
+    </>
   );
 };
 
