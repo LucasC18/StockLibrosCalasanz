@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: https://backend-stock-libros-byfmlw8ru-lucas-projects-9522f6c4.vercel.app
+          VITE_API_URL: https://backend-stock-libros.vercel.app
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
