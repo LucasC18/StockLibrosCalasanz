@@ -35,16 +35,15 @@ const TIPOS_MOVIMIENTO: {
   label: string;
   direction: 'in' | 'out' | 'neutral';
 }[] = [
-  { value: 'INGRESO',      label: 'Ingreso de Stock',        direction: 'in'      },
-  { value: 'ENVIO',        label: 'Envío a Provincia',       direction: 'out'     },
-  { value: 'DEVOLUCION',   label: 'Devolución',              direction: 'in'      },
-  { value: 'AJUSTE_STOCK', label: 'Ajuste de Stock',         direction: 'neutral' },
-  { value: 'MODIFICACION', label: 'Modificación de Datos',   direction: 'neutral' },
-  { value: 'CORRECCION',   label: 'Corrección de Registro',  direction: 'neutral' },
-  { value: 'BAJA',         label: 'Baja Lógica',             direction: 'out'     },
+  { value: 'INGRESO',      label: 'Ingreso de Stock',       direction: 'in'      },
+  { value: 'ENVIO',        label: 'Envío a Provincia',      direction: 'out'     },
+  { value: 'DEVOLUCION',   label: 'Devolución',             direction: 'in'      },
+  { value: 'AJUSTE_STOCK', label: 'Ajuste de Stock',        direction: 'neutral' },
+  { value: 'MODIFICACION', label: 'Modificación de Datos',  direction: 'neutral' },
+  { value: 'CORRECCION',   label: 'Corrección de Registro', direction: 'neutral' },
+  { value: 'BAJA',         label: 'Baja Lógica',            direction: 'out'     },
 ];
 
-/* Direction → visual style for the selected chip */
 const DIRECTION_STYLE = {
   in:      { bg: '#f0fdf4', color: '#15803d', border: '#86efac', dot: '#16a34a' },
   out:     { bg: '#fff8f0', color: '#9a3412', border: '#fdba74', dot: '#ea580c' },
@@ -73,7 +72,6 @@ const MovementDialog = ({
   }, [open]);
 
   const selectedTipo = TIPOS_MOVIMIENTO.find((t) => t.value === tipo)!;
-  const config = EVENT_CONFIG[tipo];
   const dirStyle = DIRECTION_STYLE[selectedTipo.direction];
 
   const stockCambio = selectedTipo.direction === 'out' ? -cantidad : cantidad;
@@ -117,28 +115,29 @@ const MovementDialog = ({
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+        * { box-sizing: border-box; }
 
         /* ── Dialog shell ── */
-        .md-dialog [role="dialog"] {
-          font-family: 'Lato', sans-serif !important;
-          border-radius: 20px !important;
-          border: 1px solid #e8ddd8 !important;
-          box-shadow: 0 24px 64px rgba(0,0,0,0.14) !important;
+        .mdv-wrap [role="dialog"] {
+          font-family: 'DM Sans', sans-serif !important;
+          border-radius: 22px !important;
+          border: 1px solid #e4dbd6 !important;
+          box-shadow: 0 24px 64px rgba(0,0,0,0.13) !important;
           padding: 0 !important;
           overflow: hidden !important;
           max-width: 520px !important;
         }
 
         /* ── Header ── */
-        .md-header {
+        .mdv-header {
           background: #6b1228;
-          padding: 26px 30px 22px;
-          position: relative;
-          overflow: hidden;
+          padding: 24px 28px 20px;
+          position: relative; overflow: hidden;
         }
 
-        .md-header::before {
+        .mdv-header::before {
           content: '';
           position: absolute;
           top: -50px; right: -50px;
@@ -148,7 +147,7 @@ const MovementDialog = ({
           pointer-events: none;
         }
 
-        .md-header::after {
+        .mdv-header::after {
           content: '';
           position: absolute;
           bottom: 0; left: 0; right: 0;
@@ -156,27 +155,26 @@ const MovementDialog = ({
           background: rgba(255,255,255,0.1);
         }
 
-        .md-eyebrow {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
+        .mdv-eyebrow {
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.06em;
           color: rgba(255,255,255,0.5);
-          display: block;
-          margin-bottom: 5px;
+          display: block; margin-bottom: 5px;
         }
 
-        .md-header h2 {
-          font-family: 'Playfair Display', serif !important;
-          font-size: 20px !important;
+        .mdv-header h2 {
+          font-family: 'DM Sans', sans-serif !important;
+          font-size: 21px !important;
           font-weight: 700 !important;
+          letter-spacing: -0.02em !important;
           color: #fff !important;
-          margin: 0 0 10px !important;
+          margin: 0 0 12px !important;
           line-height: 1.2 !important;
         }
 
         /* Stock pill */
-        .md-stock-pill {
+        .mdv-stock-pill {
           display: inline-flex;
           align-items: center;
           gap: 8px;
@@ -184,137 +182,130 @@ const MovementDialog = ({
           border: 1px solid rgba(255,255,255,0.18);
           border-radius: 99px;
           padding: 5px 14px 5px 10px;
+          font-family: 'DM Sans', sans-serif;
           font-size: 12px;
-          color: rgba(255,255,255,0.85);
           font-weight: 400;
+          color: rgba(255,255,255,0.8);
         }
 
-        .md-stock-pill strong {
-          font-weight: 700;
-          color: #fff;
-        }
+        .mdv-stock-pill strong { font-weight: 700; color: #fff; }
 
-        .md-stock-dot {
+        .mdv-stock-dot {
           width: 7px; height: 7px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.5);
+          background: rgba(255,255,255,0.45);
           flex-shrink: 0;
         }
 
-        .md-book-name {
-          font-size: 12px;
-          color: rgba(255,255,255,0.65);
-          font-weight: 300;
-          margin-right: 4px;
+        .mdv-book-name {
+          color: rgba(255,255,255,0.6);
+          font-weight: 400;
         }
 
         /* ── Body ── */
-        .md-body {
-          padding: 26px 30px 30px;
-          background: #f7f4f0;
+        .mdv-body {
+          padding: 24px 28px 28px;
+          background: #f5f1ee;
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 18px;
         }
 
-        /* ── Section label ── */
-        .md-label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
+        /* ── Section divider ── */
+        .mdv-section {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .mdv-section-title {
+          font-size: 12px;
+          font-weight: 600;
           color: #6b1228;
-          display: block;
-          margin-bottom: 10px;
-          padding-bottom: 7px;
-          border-bottom: 1px solid #e6ddd8;
+          white-space: nowrap;
+          letter-spacing: 0.01em;
+        }
+
+        .mdv-section-line {
+          flex: 1; height: 1px;
+          background: #e4dbd6;
         }
 
         /* ── Type grid ── */
-        .md-type-grid {
+        .mdv-type-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 8px;
         }
 
-        .md-type-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
+        .mdv-type-btn {
+          display: flex; align-items: center; gap: 8px;
           padding: 10px 12px;
           border-radius: 10px;
-          font-family: 'Lato', sans-serif;
-          font-size: 12px;
-          font-weight: 700;
-          text-align: left;
-          cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px; font-weight: 600;
+          text-align: left; cursor: pointer;
           transition: all 0.15s;
           background: #fff;
-          border: 1.5px solid #e6ddd8;
-          color: #5a5a5a;
+          border: 1.5px solid #e4dbd6;
+          color: #5a5050;
         }
 
-        .md-type-btn:hover:not(.selected) {
+        .mdv-type-btn:hover:not(.selected) {
           border-color: #c9b8b0;
-          color: #3a3a3a;
+          color: #3a3030;
           background: #faf7f5;
         }
 
-        .md-type-btn.selected {
-          border-width: 2px;
-        }
+        .mdv-type-btn.selected { border-width: 2px; }
 
-        .md-type-dot {
+        .mdv-type-dot {
           width: 7px; height: 7px;
-          border-radius: 50%;
-          flex-shrink: 0;
+          border-radius: 50%; flex-shrink: 0;
           background: #c9b8b0;
         }
 
-        .md-type-btn.selected .md-type-dot {
-          /* color set inline */
-        }
-
         /* ── Field ── */
-        .md-field {
-          display: flex;
-          flex-direction: column;
-          gap: 0;
-        }
+        .mdv-field { display: flex; flex-direction: column; gap: 0; }
 
-        .md-field input,
-        .md-field select,
-        .md-field textarea {
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
+        .mdv-field input,
+        .mdv-field select,
+        .mdv-field textarea {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 400;
           color: #1a1a1a;
           background: #fff;
-          border: 1.5px solid #e6ddd8;
-          border-radius: 9px;
+          border: 1.5px solid #e4dbd6;
+          border-radius: 10px;
           outline: none;
           transition: border-color 0.18s, box-shadow 0.18s;
           width: 100%;
           box-sizing: border-box;
         }
 
-        .md-field input,
-        .md-field select { height: 40px; padding: 0 12px; }
-        .md-field textarea { padding: 10px 12px; resize: none; line-height: 1.55; }
+        .mdv-field input,
+        .mdv-field select { height: 42px; padding: 0 12px; }
 
-        .md-field input::placeholder,
-        .md-field textarea::placeholder { color: #c0b0a8; }
-
-        .md-field input:focus,
-        .md-field select:focus,
-        .md-field textarea:focus {
-          border-color: #6b1228;
-          box-shadow: 0 0 0 3px rgba(107,18,40,0.1);
+        .mdv-field textarea {
+          padding: 10px 12px;
+          resize: none; line-height: 1.55;
         }
 
-        .md-field input.err,
-        .md-field select.err { border-color: #c0392b; background: #fff8f7; }
+        .mdv-field input::placeholder,
+        .mdv-field textarea::placeholder { color: #c5b5ae; }
 
-        .md-field select {
+        .mdv-field input:focus,
+        .mdv-field select:focus,
+        .mdv-field textarea:focus {
+          border-color: #6b1228;
+          box-shadow: 0 0 0 3px rgba(107,18,40,0.08);
+        }
+
+        .mdv-field input.err,
+        .mdv-field select.err { border-color: #c0392b; background: #fff8f7; }
+
+        .mdv-field select {
           appearance: none;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b1228' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
           background-repeat: no-repeat;
@@ -323,104 +314,86 @@ const MovementDialog = ({
           cursor: pointer;
         }
 
-        .md-field-error {
-          font-size: 11px;
-          color: #6b1228;
-          margin-top: 5px;
-          font-weight: 400;
+        .mdv-field-error {
+          font-size: 12px; font-weight: 400;
+          color: #6b1228; margin-top: 5px;
         }
 
         /* ── Stock preview ── */
-        .md-stock-preview {
+        .mdv-stock-preview {
           display: flex;
           align-items: center;
           justify-content: space-between;
           background: #fff;
-          border: 1px solid #e6ddd8;
-          border-radius: 10px;
-          padding: 12px 16px;
+          border: 1px solid #e4dbd6;
+          border-radius: 12px;
+          padding: 14px 18px;
           margin-top: 10px;
         }
 
-        .md-stock-preview-label {
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: #8a8a8a;
+        .mdv-preview-label {
+          font-size: 11px; font-weight: 500;
+          color: #b5a09a; margin-bottom: 4px;
+          letter-spacing: 0.01em;
         }
 
-        .md-stock-preview-val {
-          font-family: 'Playfair Display', serif;
-          font-size: 20px;
-          font-weight: 700;
-          color: #1a1a1a;
+        .mdv-preview-val {
+          font-size: 22px; font-weight: 700;
+          letter-spacing: -0.03em;
+          color: #1a1a1a; line-height: 1;
         }
 
-        .md-stock-preview-val.neg { color: #b91c1c; }
+        .mdv-preview-val.neg { color: #b91c1c; }
 
-        .md-stock-arrow {
-          font-size: 20px;
-          color: #c9b8b0;
-          line-height: 1;
+        .mdv-preview-arrow {
+          font-size: 18px; color: #c9b8b0; line-height: 1;
         }
 
         /* ── Footer ── */
-        .md-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
+        .mdv-footer {
+          display: flex; justify-content: flex-end; gap: 10px;
         }
 
-        .md-btn-cancel {
-          height: 40px;
-          padding: 0 20px;
-          border-radius: 9px;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          color: #7a6a64;
-          background: #fff;
-          border: 1.5px solid #e6ddd8;
-          cursor: pointer;
-          transition: background 0.15s;
+        .mdv-btn-cancel {
+          height: 42px; padding: 0 20px;
+          border-radius: 10px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 600;
+          color: #7a6a64; background: #fff;
+          border: 1.5px solid #e4dbd6;
+          cursor: pointer; transition: background 0.15s;
         }
 
-        .md-btn-cancel:hover { background: #f0ebe6; }
+        .mdv-btn-cancel:hover { background: #f0ebe6; }
 
-        .md-btn-submit {
-          height: 40px;
-          padding: 0 24px;
-          border-radius: 9px;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          color: #fff;
-          background: #6b1228;
-          border: none;
-          cursor: pointer;
+        .mdv-btn-submit {
+          height: 42px; padding: 0 24px;
+          border-radius: 10px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 600;
+          color: #fff; background: #6b1228;
+          border: none; cursor: pointer;
           box-shadow: 0 4px 14px rgba(107,18,40,0.28);
           transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
-          letter-spacing: 0.04em;
         }
 
-        .md-btn-submit:hover { background: #7d1630; box-shadow: 0 6px 18px rgba(107,18,40,0.36); }
-        .md-btn-submit:active { transform: scale(0.985); }
+        .mdv-btn-submit:hover  { background: #7c1530; box-shadow: 0 6px 18px rgba(107,18,40,0.36); }
+        .mdv-btn-submit:active { transform: scale(0.987); }
       `}</style>
 
-      <div className="md-dialog">
+      <div className="mdv-wrap">
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
           <DialogContent className="p-0 gap-0 max-w-lg max-h-[90vh] overflow-y-auto">
 
             {/* Header */}
-            <div className="md-header">
-              <span className="md-eyebrow">Registrar operación</span>
+            <div className="mdv-header">
+              <span className="mdv-eyebrow">Registrar operación</span>
               <DialogTitle asChild>
                 <h2>Nuevo Movimiento</h2>
               </DialogTitle>
-              <div className="md-stock-pill">
-                <div className="md-stock-dot" />
-                <span className="md-book-name">{bookTitle}</span>
+              <div className="mdv-stock-pill">
+                <div className="mdv-stock-dot" />
+                <span className="mdv-book-name">{bookTitle}</span>
                 <strong>{currentStock} u.</strong>
               </div>
               <DialogDescription className="sr-only">
@@ -429,13 +402,16 @@ const MovementDialog = ({
             </div>
 
             {/* Body */}
-            <div className="md-body">
+            <div className="mdv-body">
               <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
 
                 {/* Type selector */}
                 <div>
-                  <span className="md-label">Tipo de Movimiento</span>
-                  <div className="md-type-grid">
+                  <div className="mdv-section">
+                    <span className="mdv-section-title">Tipo de movimiento</span>
+                    <div className="mdv-section-line" />
+                  </div>
+                  <div className="mdv-type-grid">
                     {TIPOS_MOVIMIENTO.map((t) => {
                       const isSelected = tipo === t.value;
                       const ds = DIRECTION_STYLE[t.direction];
@@ -443,7 +419,7 @@ const MovementDialog = ({
                         <button
                           key={t.value}
                           type="button"
-                          className={`md-type-btn${isSelected ? ' selected' : ''}`}
+                          className={`mdv-type-btn${isSelected ? ' selected' : ''}`}
                           style={isSelected
                             ? { background: ds.bg, borderColor: ds.border, color: ds.color }
                             : {}}
@@ -455,7 +431,7 @@ const MovementDialog = ({
                           }}
                         >
                           <span
-                            className="md-type-dot"
+                            className="mdv-type-dot"
                             style={isSelected ? { background: ds.dot } : {}}
                           />
                           {t.label}
@@ -468,10 +444,13 @@ const MovementDialog = ({
                 {/* Cantidad */}
                 {showCantidad && (
                   <div>
-                    <span className="md-label">
-                      {selectedTipo.direction === 'neutral' ? 'Variación de Stock' : 'Cantidad'}
-                    </span>
-                    <div className="md-field">
+                    <div className="mdv-section">
+                      <span className="mdv-section-title">
+                        {selectedTipo.direction === 'neutral' ? 'Variación de stock' : 'Cantidad'}
+                      </span>
+                      <div className="mdv-section-line" />
+                    </div>
+                    <div className="mdv-field">
                       <input
                         type="number"
                         value={cantidad}
@@ -479,19 +458,19 @@ const MovementDialog = ({
                         className={errors.cantidad ? 'err' : ''}
                         min={selectedTipo.direction === 'neutral' ? undefined : '0'}
                       />
-                      {errors.cantidad && <span className="md-field-error">{errors.cantidad}</span>}
+                      {errors.cantidad && <span className="mdv-field-error">{errors.cantidad}</span>}
                     </div>
 
                     {cantidad !== 0 && (
-                      <div className="md-stock-preview">
+                      <div className="mdv-stock-preview">
                         <div>
-                          <div className="md-stock-preview-label">Stock actual</div>
-                          <div className="md-stock-preview-val">{currentStock} u.</div>
+                          <div className="mdv-preview-label">Stock actual</div>
+                          <div className="mdv-preview-val">{currentStock} u.</div>
                         </div>
-                        <div className="md-stock-arrow">→</div>
+                        <div className="mdv-preview-arrow">→</div>
                         <div style={{ textAlign: 'right' }}>
-                          <div className="md-stock-preview-label">Stock resultante</div>
-                          <div className={`md-stock-preview-val${newStock < 0 ? ' neg' : ''}`}>
+                          <div className="mdv-preview-label">Stock resultante</div>
+                          <div className={`mdv-preview-val${newStock < 0 ? ' neg' : ''}`}>
                             {newStock} u.
                           </div>
                         </div>
@@ -503,10 +482,13 @@ const MovementDialog = ({
                 {/* Provincia */}
                 {(tipo === 'ENVIO' || tipo === 'DEVOLUCION') && (
                   <div>
-                    <span className="md-label">
-                      Provincia {tipo === 'ENVIO' ? 'de Destino' : 'de Origen'}
-                    </span>
-                    <div className="md-field">
+                    <div className="mdv-section">
+                      <span className="mdv-section-title">
+                        Provincia {tipo === 'ENVIO' ? 'de destino' : 'de origen'}
+                      </span>
+                      <div className="mdv-section-line" />
+                    </div>
+                    <div className="mdv-field">
                       <select
                         value={provincia}
                         onChange={(e) => { setProvincia(e.target.value); clearError('provincia'); }}
@@ -515,15 +497,18 @@ const MovementDialog = ({
                         <option value="">Seleccionar...</option>
                         {PROVINCIAS.map((p) => <option key={p} value={p}>{p}</option>)}
                       </select>
-                      {errors.provincia && <span className="md-field-error">{errors.provincia}</span>}
+                      {errors.provincia && <span className="mdv-field-error">{errors.provincia}</span>}
                     </div>
                   </div>
                 )}
 
                 {/* Descripción */}
                 <div>
-                  <span className="md-label">Descripción del Movimiento</span>
-                  <div className="md-field">
+                  <div className="mdv-section">
+                    <span className="mdv-section-title">Descripción del movimiento</span>
+                    <div className="mdv-section-line" />
+                  </div>
+                  <div className="mdv-field">
                     <textarea
                       rows={3}
                       value={descripcion}
@@ -531,19 +516,19 @@ const MovementDialog = ({
                       className={errors.descripcion ? 'err' : ''}
                       placeholder="Detalle del movimiento realizado..."
                     />
-                    {errors.descripcion && <span className="md-field-error">{errors.descripcion}</span>}
+                    {errors.descripcion && <span className="mdv-field-error">{errors.descripcion}</span>}
                   </div>
                 </div>
 
                 {/* Observaciones */}
                 <div>
-                  <span className="md-label">
-                    Observaciones{' '}
-                    <span style={{ textTransform: 'none', fontWeight: 400, letterSpacing: 0 }}>
-                      (opcional)
+                  <div className="mdv-section">
+                    <span className="mdv-section-title">
+                      Observaciones <span style={{ fontWeight: 400, color: '#b5a09a' }}>(opcional)</span>
                     </span>
-                  </span>
-                  <div className="md-field">
+                    <div className="mdv-section-line" />
+                  </div>
+                  <div className="mdv-field">
                     <textarea
                       rows={2}
                       value={observaciones}
@@ -554,12 +539,12 @@ const MovementDialog = ({
                 </div>
 
                 {/* Footer */}
-                <div className="md-footer">
-                  <button type="button" className="md-btn-cancel" onClick={onClose}>
+                <div className="mdv-footer">
+                  <button type="button" className="mdv-btn-cancel" onClick={onClose}>
                     Cancelar
                   </button>
-                  <button type="submit" className="md-btn-submit">
-                    Registrar Movimiento
+                  <button type="submit" className="mdv-btn-submit">
+                    Registrar movimiento
                   </button>
                 </div>
 

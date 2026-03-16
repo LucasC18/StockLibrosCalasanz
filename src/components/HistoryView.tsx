@@ -41,21 +41,22 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+        * { box-sizing: border-box; }
 
         .hv-root {
           min-height: 100svh;
-          background: #f7f4f0;
-          font-family: 'Lato', sans-serif;
+          background: #f5f1ee;
+          font-family: 'DM Sans', sans-serif;
         }
 
         /* ── Top bar ── */
         .hv-topbar {
           background: #fff;
-          border-bottom: 1px solid #e8ddd8;
+          border-bottom: 1px solid #e4dbd6;
           position: sticky;
-          top: 0;
-          z-index: 10;
+          top: 0; z-index: 10;
         }
 
         .hv-topbar-inner {
@@ -73,12 +74,11 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
           display: flex;
           align-items: center;
           gap: 7px;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          color: #7a6a64;
-          background: none;
-          border: none;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px;
+          font-weight: 600;
+          color: #9e8e88;
+          background: none; border: none;
           cursor: pointer;
           padding: 6px 0;
           transition: color 0.15s;
@@ -86,26 +86,17 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
 
         .hv-back-btn:hover { color: #6b1228; }
 
-        .hv-topbar-actions {
-          display: flex;
-          gap: 8px;
-        }
+        .hv-topbar-actions { display: flex; gap: 8px; }
 
         .hv-btn-secondary {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          height: 36px;
-          padding: 0 16px;
-          font-family: 'Lato', sans-serif;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          color: #5a5a5a;
+          display: flex; align-items: center; gap: 7px;
+          height: 36px; padding: 0 16px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px; font-weight: 600;
+          color: #5a5050;
           background: #fff;
-          border: 1.5px solid #e6ddd8;
-          border-radius: 9px;
-          cursor: pointer;
+          border: 1.5px solid #e4dbd6;
+          border-radius: 9px; cursor: pointer;
           transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
 
@@ -116,59 +107,48 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
         }
 
         .hv-btn-primary {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          height: 36px;
-          padding: 0 18px;
-          font-family: 'Lato', sans-serif;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
+          display: flex; align-items: center; gap: 7px;
+          height: 36px; padding: 0 18px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px; font-weight: 600;
           color: #fff;
           background: #6b1228;
-          border: none;
-          border-radius: 9px;
-          cursor: pointer;
+          border: none; border-radius: 9px; cursor: pointer;
           box-shadow: 0 3px 10px rgba(107,18,40,0.26);
           transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
         }
 
-        .hv-btn-primary:hover { background: #7d1630; box-shadow: 0 5px 14px rgba(107,18,40,0.34); }
-        .hv-btn-primary:active { transform: scale(0.985); }
+        .hv-btn-primary:hover  { background: #7c1530; box-shadow: 0 5px 14px rgba(107,18,40,0.34); }
+        .hv-btn-primary:active { transform: scale(0.987); }
 
-        /* ── Page body ── */
+        /* ── Body grid ── */
         .hv-body {
           max-width: 1200px;
           margin: 0 auto;
           padding: 32px 28px 56px;
           display: grid;
-          grid-template-columns: 320px 1fr;
+          grid-template-columns: 300px 1fr;
           gap: 28px;
           align-items: start;
         }
 
-        @media (max-width: 860px) {
-          .hv-body { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 860px) { .hv-body { grid-template-columns: 1fr; } }
 
-        /* ── Book card (left) ── */
+        /* ── Book card ── */
         .hv-book-card {
           background: #fff;
           border-radius: 18px;
-          border: 1px solid #e8ddd8;
+          border: 1px solid #e4dbd6;
           overflow: hidden;
           box-shadow: 0 2px 12px rgba(0,0,0,0.05);
           position: sticky;
           top: 76px;
         }
 
-        /* Header strip inside card */
         .hv-card-strip {
           background: #6b1228;
           padding: 20px 22px 18px;
-          position: relative;
-          overflow: hidden;
+          position: relative; overflow: hidden;
         }
 
         .hv-card-strip::after {
@@ -181,122 +161,101 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
           pointer-events: none;
         }
 
-        .hv-card-strip-eyebrow {
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
+        .hv-card-eyebrow {
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.06em;
           color: rgba(255,255,255,0.5);
-          margin-bottom: 4px;
-          display: block;
+          display: block; margin-bottom: 5px;
         }
 
         .hv-card-strip h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 17px;
-          font-weight: 700;
-          color: #fff;
-          margin: 0 0 3px;
-          line-height: 1.25;
-          position: relative;
-          z-index: 1;
+          font-size: 17px !important;
+          font-weight: 700 !important;
+          letter-spacing: -0.015em !important;
+          color: #fff !important;
+          margin: 0 0 3px !important;
+          line-height: 1.25 !important;
+          position: relative; z-index: 1;
         }
 
         .hv-card-strip p {
-          font-size: 12px;
-          color: rgba(255,255,255,0.6);
-          margin: 0;
-          font-weight: 300;
-          position: relative;
-          z-index: 1;
+          font-size: 12px !important;
+          font-weight: 400 !important;
+          color: rgba(255,255,255,0.58) !important;
+          margin: 0 !important;
+          position: relative; z-index: 1;
         }
 
         /* Cover */
-        .hv-cover-wrap {
-          padding: 20px 22px 0;
-        }
+        .hv-cover-wrap { padding: 20px 22px 0; }
 
         .hv-cover {
           width: 100%;
           aspect-ratio: 3 / 4;
-          border-radius: 10px;
-          overflow: hidden;
+          border-radius: 10px; overflow: hidden;
           background: #f0ebe6;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid #e6ddd8;
+          display: flex; align-items: center; justify-content: center;
+          border: 1px solid #e4dbd6;
         }
 
         .hv-cover img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Description */
         .hv-description {
-          padding: 16px 22px 0;
+          padding: 14px 22px 0;
           font-size: 12px;
-          color: #8a8a8a;
+          font-weight: 400;
+          color: #9e8e88;
           line-height: 1.65;
-          font-weight: 300;
         }
 
-        /* Detail grid */
+        /* Details grid */
         .hv-details {
           padding: 18px 22px 22px;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          gap: 14px;
           border-top: 1px solid #f0ebe6;
           margin-top: 16px;
         }
 
-        .hv-detail-item {}
-
         .hv-detail-label {
-          display: flex;
-          align-items: center;
-          gap: 4px;
+          display: flex; align-items: center; gap: 4px;
           margin-bottom: 3px;
         }
 
         .hv-detail-label span {
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: #a89890;
+          font-size: 10px;
+          font-weight: 500;
+          color: #b5a09a;
+          letter-spacing: 0.02em;
         }
 
         .hv-detail-value {
-          font-size: 12px;
-          font-weight: 700;
+          font-size: 13px;
+          font-weight: 600;
           color: #1a1a1a;
           line-height: 1.3;
+          margin: 0;
         }
 
         .hv-detail-value.highlight {
           color: #6b1228;
-          font-size: 14px;
-        }
-
-        /* Estado badge inline */
-        .hv-estado-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          padding: 2px 9px;
-          border-radius: 99px;
-          font-size: 10px;
+          font-size: 15px;
           font-weight: 700;
-          letter-spacing: 0.04em;
+          letter-spacing: -0.01em;
         }
 
-        .hv-estado-dot {
-          width: 5px; height: 5px;
-          border-radius: 50%;
-          flex-shrink: 0;
+        .hv-estado-badge {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 3px 9px; border-radius: 99px;
+          font-size: 11px; font-weight: 600;
         }
 
-        /* ── Timeline (right) ── */
+        .hv-estado-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── Timeline ── */
         .hv-timeline-header {
           display: flex;
           justify-content: space-between;
@@ -305,71 +264,59 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
         }
 
         .hv-timeline-header h3 {
-          font-size: 10px;
+          font-size: 13px;
           font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
+          letter-spacing: -0.01em;
           color: #6b1228;
           margin: 0;
         }
 
         .hv-timeline-count {
-          font-size: 11px;
-          color: #a89890;
+          font-size: 12px;
+          font-weight: 600;
+          color: #b5a09a;
           background: #fff;
-          border: 1px solid #e6ddd8;
+          border: 1px solid #e4dbd6;
           border-radius: 99px;
-          padding: 2px 10px;
-          font-weight: 700;
+          padding: 3px 12px;
         }
 
-        /* Timeline list */
-        .hv-timeline {
-          position: relative;
-          padding-left: 0;
-        }
+        .hv-timeline { position: relative; padding-left: 0; }
 
         .hv-timeline-line {
           position: absolute;
-          left: 17px;
-          top: 18px;
-          bottom: 18px;
+          left: 17px; top: 18px; bottom: 18px;
           width: 2px;
-          background: linear-gradient(180deg, #e8ddd8 0%, transparent 100%);
+          background: linear-gradient(180deg, #e4dbd6 0%, transparent 100%);
         }
 
         .hv-event {
           position: relative;
           padding-left: 52px;
-          padding-bottom: 22px;
+          padding-bottom: 20px;
         }
 
         .hv-event:last-child { padding-bottom: 0; }
 
-        /* Node */
+        /* Timeline node */
         .hv-event-node {
           position: absolute;
           left: 0; top: 0;
           width: 36px; height: 36px;
           border-radius: 50%;
-          border: 3px solid #f7f4f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          border: 3px solid #f5f1ee;
+          display: flex; align-items: center; justify-content: center;
           z-index: 2;
           box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
 
-        .hv-event-node-dot {
-          width: 10px; height: 10px;
-          border-radius: 50%;
-        }
+        .hv-event-node-dot { width: 10px; height: 10px; border-radius: 50%; }
 
-        /* Card */
+        /* Event card */
         .hv-event-card {
           background: #fff;
-          border-radius: 13px;
-          border: 1px solid #e8ddd8;
+          border-radius: 14px;
+          border: 1px solid #e4dbd6;
           padding: 16px 18px;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
@@ -383,31 +330,29 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 8px;
-          gap: 8px;
+          margin-bottom: 8px; gap: 8px;
         }
 
         .hv-event-type {
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
+          letter-spacing: 0.04em;
         }
 
         .hv-event-date {
           font-size: 11px;
-          color: #a89890;
-          font-weight: 300;
+          font-weight: 400;
+          color: #b5a09a;
           white-space: nowrap;
           font-variant-numeric: tabular-nums;
         }
 
         .hv-event-desc {
           font-size: 13px;
-          color: #3a3a3a;
+          font-weight: 400;
+          color: #3a3030;
           line-height: 1.6;
           margin-bottom: 12px;
-          font-weight: 400;
         }
 
         /* Meta strip */
@@ -415,66 +360,57 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
           display: flex;
           flex-wrap: wrap;
           gap: 16px;
-          background: #f7f4f0;
-          border-radius: 8px;
+          background: #f5f1ee;
+          border-radius: 9px;
           border: 1px solid #ede8e4;
           padding: 10px 14px;
         }
 
-        .hv-meta-item {}
-
         .hv-meta-label {
-          font-size: 9px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #a89890;
-          display: block;
-          margin-bottom: 2px;
+          font-size: 10px;
+          font-weight: 500;
+          color: #b5a09a;
+          display: block; margin-bottom: 2px;
+          letter-spacing: 0.02em;
         }
 
         .hv-meta-value {
-          font-size: 12px;
-          font-weight: 700;
+          font-size: 13px;
+          font-weight: 600;
           color: #1a1a1a;
+          letter-spacing: -0.01em;
         }
 
         /* Stock arrow */
         .hv-stock-change {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #1a1a1a;
+          display: flex; align-items: center; gap: 6px;
+          font-size: 13px; font-weight: 600; color: #1a1a1a;
         }
 
-        .hv-stock-arrow {
-          font-size: 10px;
-          color: #a89890;
-        }
+        .hv-stock-arrow { font-size: 11px; color: #c9b8b0; }
 
         /* Observaciones */
         .hv-event-obs {
           margin-top: 10px;
-          font-size: 11px;
+          font-size: 12px;
           font-style: italic;
-          color: #8a8a8a;
+          font-weight: 400;
+          color: #9e8e88;
           padding-left: 12px;
-          border-left: 2px solid #e6ddd8;
-          font-weight: 300;
-          line-height: 1.5;
+          border-left: 2px solid #e4dbd6;
+          line-height: 1.55;
         }
 
         /* Empty */
         .hv-empty {
           text-align: center;
           padding: 48px 20px;
-          color: #a89890;
+          color: #b5a09a;
           font-size: 13px;
+          font-weight: 400;
           background: #fff;
           border-radius: 14px;
-          border: 1px solid #e8ddd8;
+          border: 1px solid #e4dbd6;
         }
       `}</style>
 
@@ -508,7 +444,7 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
           {/* Left: Book card */}
           <div className="hv-book-card">
             <div className="hv-card-strip">
-              <span className="hv-card-strip-eyebrow">Ficha del libro</span>
+              <span className="hv-card-eyebrow">Ficha del libro</span>
               <h2>{book.titulo}</h2>
               <p>{book.autor}</p>
             </div>
@@ -527,22 +463,19 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
             )}
 
             <div className="hv-details">
-              <DetailItem icon={Hash}     label="Código"      value={book.codigo} />
-              <DetailItem icon={Layers}   label="Stock"       value={`${book.stock_actual} u.`} highlight />
-              <DetailItem icon={Tag}      label="ISBN"        value={book.isbn} />
-              <DetailItem icon={Tag}      label="Editorial"   value={book.editorial} />
-              <DetailItem icon={Tag}      label="Categoría"   value={book.categoria} />
-              <DetailItem icon={MapPin}   label="Ubicación"   value={book.ubicacion} />
-              <DetailItem icon={Calendar} label="Fecha Alta"  value={book.fecha_alta} />
-              <div className="hv-detail-item">
+              <DetailItem icon={Hash}     label="Código"     value={book.codigo} />
+              <DetailItem icon={Layers}   label="Stock"      value={`${book.stock_actual} u.`} highlight />
+              <DetailItem icon={Tag}      label="ISBN"       value={book.isbn} />
+              <DetailItem icon={Tag}      label="Editorial"  value={book.editorial} />
+              <DetailItem icon={Tag}      label="Categoría"  value={book.categoria} />
+              <DetailItem icon={MapPin}   label="Ubicación"  value={book.ubicacion} />
+              <DetailItem icon={Calendar} label="Fecha Alta" value={book.fecha_alta} />
+              <div>
                 <div className="hv-detail-label">
-                  <User size={9} color="#a89890" />
+                  <User size={9} color="#b5a09a" />
                   <span>Estado</span>
                 </div>
-                <span
-                  className="hv-estado-badge"
-                  style={{ background: est.bg, color: est.color }}
-                >
+                <span className="hv-estado-badge" style={{ background: est.bg, color: est.color }}>
                   <span className="hv-estado-dot" style={{ background: est.dot }} />
                   {est.label}
                 </span>
@@ -587,25 +520,25 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
                       <p className="hv-event-desc">{event.descripcion_evento}</p>
 
                       <div className="hv-event-meta">
-                        <div className="hv-meta-item">
+                        <div>
                           <span className="hv-meta-label">Responsable</span>
                           <span className="hv-meta-value">{event.usuario_responsable}</span>
                         </div>
 
                         {event.provincia_destino && (
-                          <div className="hv-meta-item">
+                          <div>
                             <span className="hv-meta-label">Destino</span>
                             <span className="hv-meta-value">{event.provincia_destino}</span>
                           </div>
                         )}
 
-                        <div className="hv-meta-item">
+                        <div>
                           <span className="hv-meta-label">Variación Stock</span>
-                          <span className="hv-stock-change">
+                          <div className="hv-stock-change">
                             {event.stock_anterior}
                             <span className="hv-stock-arrow">→</span>
                             {event.stock_nuevo}
-                          </span>
+                          </div>
                         </div>
                       </div>
 
@@ -618,6 +551,7 @@ const HistoryView = ({ book, onBack, onEditBook, onAddMovement }: HistoryViewPro
               })}
             </div>
           </div>
+
         </div>
       </motion.div>
 
@@ -651,9 +585,9 @@ const DetailItem = ({
   value: string;
   highlight?: boolean;
 }) => (
-  <div className="hv-detail-item">
+  <div>
     <div className="hv-detail-label">
-      <Icon size={9} color="#a89890" />
+      <Icon size={9} color="#b5a09a" />
       <span>{label}</span>
     </div>
     <p className={`hv-detail-value${highlight ? ' highlight' : ''}`}>{value}</p>

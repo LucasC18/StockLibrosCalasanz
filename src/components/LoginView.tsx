@@ -18,12 +18,10 @@ const LoginView = ({ onLogin }: LoginViewProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     if (!email.trim() || !password.trim()) {
       setError('Por favor completá todos los campos.');
       return;
     }
-
     try {
       setLoading(true);
       const result = await api.login(email, password);
@@ -40,542 +38,387 @@ const LoginView = ({ onLogin }: LoginViewProps) => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
 
-        .login-root {
+        * { box-sizing: border-box; }
+
+        .lv-root {
           min-height: 100svh;
           display: flex;
-          background: #f7f4f0;
-          font-family: 'Lato', sans-serif;
-          overflow: hidden;
-          position: relative;
-        }
-
-        /* ── Left decorative panel ── */
-        .login-panel {
-          display: none;
-          width: 42%;
-          background: #6b1228;
-          position: relative;
-          overflow: hidden;
           flex-direction: column;
-          justify-content: flex-end;
-          padding: 52px 48px;
-        }
-
-        @media (min-width: 900px) {
-          .login-panel { display: flex; }
-        }
-
-        /* Geometric top-left corner accent */
-        .panel-corner {
-          position: absolute;
-          top: 0; left: 0;
-          width: 200px; height: 200px;
-          background: rgba(255,255,255,0.05);
-          border-radius: 0 0 200px 0;
-        }
-
-        /* Subtle diagonal stripe texture */
-        .panel-texture {
-          position: absolute;
-          inset: 0;
-          background-image: repeating-linear-gradient(
-            -45deg,
-            transparent,
-            transparent 28px,
-            rgba(255,255,255,0.025) 28px,
-            rgba(255,255,255,0.025) 29px
-          );
-        }
-
-        .panel-bottom-arc {
-          position: absolute;
-          bottom: -80px; right: -80px;
-          width: 320px; height: 320px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.04);
-        }
-
-        .panel-crest {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          margin-bottom: 40px;
-        }
-
-        .panel-crest-icon {
-          width: 48px; height: 48px;
-          border-radius: 12px;
-          background: rgba(255,255,255,0.12);
-          display: flex; align-items: center; justify-content: center;
-          border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .panel-crest-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 15px;
-          font-weight: 600;
-          color: rgba(255,255,255,0.9);
-          line-height: 1.3;
-        }
-
-        .panel-heading {
-          position: relative;
-          z-index: 2;
-        }
-
-        .panel-heading h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 32px;
-          font-weight: 700;
-          color: #fff;
-          line-height: 1.25;
-          margin: 0 0 16px;
-        }
-
-        .panel-heading p {
-          font-size: 13px;
-          font-weight: 300;
-          color: rgba(255,255,255,0.65);
-          line-height: 1.7;
-          margin: 0;
-          max-width: 280px;
-        }
-
-        .panel-divider {
-          width: 48px;
-          height: 2px;
-          background: rgba(255,255,255,0.3);
-          margin: 20px 0;
-          position: relative;
-          z-index: 2;
-        }
-
-        /* ── Right form side ── */
-        .login-form-side {
-          flex: 1;
-          display: flex;
           align-items: center;
           justify-content: center;
-          padding: 40px 24px;
+          font-family: 'DM Sans', sans-serif;
+          background: #f5f1ee;
+          padding: 24px 16px;
           position: relative;
+          overflow: hidden;
         }
 
-        /* Soft background blob */
-        .form-bg-blob {
+        .lv-bg-1 {
           position: absolute;
-          top: -120px; right: -120px;
-          width: 420px; height: 420px;
+          top: -180px; left: -180px;
+          width: 520px; height: 520px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(107,18,40,0.07) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(107,18,40,0.07) 0%, transparent 65%);
           pointer-events: none;
         }
 
-        .form-container {
+        .lv-bg-2 {
+          position: absolute;
+          bottom: -140px; right: -140px;
+          width: 440px; height: 440px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(107,18,40,0.05) 0%, transparent 65%);
+          pointer-events: none;
+        }
+
+        /* ── Institution header ── */
+        .lv-institution {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 28px;
+          position: relative;
+          z-index: 1;
+          text-align: center;
+        }
+
+        .lv-logo {
+          width: 58px; height: 58px;
+          border-radius: 18px;
+          background: #6b1228;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 8px 28px rgba(107,18,40,0.3);
+        }
+
+        .lv-inst-name {
+          font-size: 17px;
+          font-weight: 700;
+          color: #1a1a1a;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+        }
+
+        .lv-inst-sub {
+          font-size: 13px;
+          font-weight: 400;
+          color: #9e8e88;
+          margin-top: 3px;
+        }
+
+        /* ── Card ── */
+        .lv-card {
           width: 100%;
-          max-width: 400px;
+          max-width: 420px;
+          background: #fff;
+          border-radius: 22px;
+          padding: 40px 40px 36px;
+          border: 1px solid rgba(0,0,0,0.06);
+          box-shadow:
+            0 2px 4px rgba(0,0,0,0.04),
+            0 12px 48px rgba(0,0,0,0.1);
           position: relative;
           z-index: 1;
         }
 
-        /* Mobile-only header */
-        .mobile-header {
-          text-align: center;
-          margin-bottom: 36px;
-        }
-
-        @media (min-width: 900px) {
-          .mobile-header { display: none; }
-        }
-
-        .mobile-header-icon {
-          display: inline-flex;
-          width: 52px; height: 52px;
-          border-radius: 14px;
+        /* Burdó top accent */
+        .lv-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 36px; right: 36px;
+          height: 3px;
           background: #6b1228;
-          align-items: center; justify-content: center;
-          margin-bottom: 16px;
-          box-shadow: 0 8px 24px rgba(107,18,40,0.25);
+          border-radius: 0 0 4px 4px;
         }
 
-        .mobile-header h1 {
-          font-family: 'Playfair Display', serif;
-          font-size: 20px;
+        .lv-card-title {
+          font-size: 23px;
           font-weight: 700;
           color: #1a1a1a;
-          margin: 0 0 6px;
-          line-height: 1.3;
+          letter-spacing: -0.025em;
+          margin: 0 0 5px;
+          line-height: 1.2;
         }
 
-        .mobile-header p {
-          font-size: 12px;
-          color: #8a8a8a;
-          margin: 0;
-          line-height: 1.6;
+        .lv-card-desc {
+          font-size: 14px;
+          font-weight: 400;
+          color: #9e8e88;
+          margin: 0 0 26px;
+          line-height: 1.5;
         }
 
-        /* Form card */
-        .form-card {
-          background: #fff;
-          border-radius: 20px;
-          padding: 40px 36px;
-          box-shadow:
-            0 1px 3px rgba(0,0,0,0.04),
-            0 8px 32px rgba(0,0,0,0.08),
-            0 0 0 1px rgba(0,0,0,0.04);
-        }
-
-        .form-card-header {
-          margin-bottom: 32px;
-        }
-
-        .form-card-header .eyebrow {
-          display: block;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: #6b1228;
-          margin-bottom: 8px;
-        }
-
-        .form-card-header h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 22px;
-          font-weight: 700;
-          color: #1a1a1a;
-          margin: 0 0 6px;
-          line-height: 1.3;
-        }
-
-        .form-card-header p {
-          font-size: 13px;
-          color: #8a8a8a;
-          margin: 0;
-          font-weight: 300;
-        }
-
-        /* Separator */
-        .form-card-sep {
+        .lv-divider {
           height: 1px;
-          background: linear-gradient(90deg, #e8e0dc, transparent);
-          margin-bottom: 28px;
+          background: #ede7e2;
+          margin-bottom: 26px;
         }
 
-        /* Field */
-        .field-group {
+        /* ── Fields ── */
+        .lv-fields {
           display: flex;
           flex-direction: column;
-          gap: 20px;
-          margin-bottom: 24px;
+          gap: 18px;
+          margin-bottom: 20px;
         }
 
-        .field {
+        .lv-field {
           display: flex;
           flex-direction: column;
           gap: 7px;
         }
 
-        .field label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #5a5a5a;
+        .lv-field label {
+          font-size: 13px;
+          font-weight: 600;
+          color: #3a3030;
+          letter-spacing: 0;
         }
 
-        .field-input-wrap {
-          position: relative;
-        }
+        .lv-input-wrap { position: relative; }
 
-        .field input {
+        .lv-input {
           width: 100%;
-          height: 44px;
+          height: 48px;
           padding: 0 16px;
-          font-family: 'Lato', sans-serif;
-          font-size: 14px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 15px;
+          font-weight: 400;
           color: #1a1a1a;
-          background: #f9f6f3;
-          border: 1.5px solid #e6ddd8;
-          border-radius: 10px;
+          background: #faf7f5;
+          border: 1.5px solid #e4dbd6;
+          border-radius: 12px;
           outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-          box-sizing: border-box;
+          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
         }
 
-        .field input::placeholder {
-          color: #bbb;
-        }
+        .lv-input::placeholder { color: #c5b5ae; }
 
-        .field input:focus {
+        .lv-input:focus {
           border-color: #6b1228;
           background: #fff;
-          box-shadow: 0 0 0 3px rgba(107,18,40,0.1);
+          box-shadow: 0 0 0 4px rgba(107,18,40,0.08);
         }
 
-        .field input.has-toggle {
-          padding-right: 44px;
-        }
+        .lv-input.pw { padding-right: 50px; }
 
-        .toggle-btn {
+        .lv-eye {
           position: absolute;
-          right: 12px;
-          top: 50%;
+          right: 14px; top: 50%;
           transform: translateY(-50%);
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #aaa;
-          display: flex;
-          align-items: center;
+          background: none; border: none;
+          cursor: pointer; color: #b5a09a;
+          display: flex; align-items: center;
           padding: 4px;
           transition: color 0.15s;
+          line-height: 0;
         }
 
-        .toggle-btn:hover {
-          color: #6b1228;
-        }
+        .lv-eye:hover { color: #6b1228; }
 
-        /* Error */
-        .error-box {
+        /* ── Error box ── */
+        .lv-error {
           display: flex;
           align-items: flex-start;
           gap: 10px;
           background: #fdf2f4;
           border: 1px solid #f0c8d0;
-          border-radius: 10px;
+          border-radius: 12px;
           padding: 12px 14px;
-          margin-bottom: 20px;
+          margin-bottom: 18px;
         }
 
-        .error-dot {
+        .lv-error-dot {
           flex-shrink: 0;
           width: 6px; height: 6px;
           border-radius: 50%;
           background: #6b1228;
-          margin-top: 5px;
+          margin-top: 6px;
         }
 
-        .error-box p {
+        .lv-error p {
           font-size: 13px;
+          font-weight: 400;
           color: #6b1228;
           margin: 0;
-          line-height: 1.5;
+          line-height: 1.55;
         }
 
-        /* Submit button */
-        .submit-btn {
+        /* ── Submit ── */
+        .lv-submit {
           width: 100%;
-          height: 46px;
+          height: 50px;
           background: #6b1228;
           color: #fff;
-          font-family: 'Lato', sans-serif;
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 15px;
+          font-weight: 600;
+          letter-spacing: 0.01em;
           border: none;
-          border-radius: 10px;
+          border-radius: 12px;
           cursor: pointer;
-          transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 14px rgba(107,18,40,0.3);
+          box-shadow: 0 4px 18px rgba(107,18,40,0.32);
+          transition: background 0.18s, box-shadow 0.18s, transform 0.1s;
         }
 
-        .submit-btn::after {
+        .lv-submit::after {
           content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+          position: absolute; inset: 0;
+          background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 100%);
           pointer-events: none;
         }
 
-        .submit-btn:hover:not(:disabled) {
-          background: #7d1630;
-          box-shadow: 0 6px 20px rgba(107,18,40,0.38);
+        .lv-submit:hover:not(:disabled) {
+          background: #7c1530;
+          box-shadow: 0 6px 24px rgba(107,18,40,0.4);
         }
 
-        .submit-btn:active:not(:disabled) {
-          transform: scale(0.985);
+        .lv-submit:active:not(:disabled) {
+          transform: scale(0.988);
           box-shadow: 0 2px 8px rgba(107,18,40,0.2);
         }
 
-        .submit-btn:disabled {
-          opacity: 0.65;
-          cursor: not-allowed;
-        }
+        .lv-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* Spinner */
-        .spinner {
+        .lv-spinner {
           display: inline-block;
-          width: 14px; height: 14px;
+          width: 15px; height: 15px;
           border: 2px solid rgba(255,255,255,0.3);
           border-top-color: #fff;
           border-radius: 50%;
-          animation: spin 0.7s linear infinite;
+          animation: lv-spin 0.65s linear infinite;
           vertical-align: middle;
-          margin-right: 8px;
+          margin-right: 9px;
         }
 
-        @keyframes spin {
-          to { transform: rotate(360deg); }
+        @keyframes lv-spin { to { transform: rotate(360deg); } }
+
+        /* ── Footer ── */
+        .lv-footer {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 22px;
+          position: relative;
+          z-index: 1;
         }
 
-        /* Footer */
-        .form-footer {
-          text-align: center;
-          margin-top: 24px;
-        }
-
-        .form-footer p {
-          font-size: 11px;
-          color: #bbb;
-          margin: 0;
-          letter-spacing: 0.04em;
-        }
-
-        .beta-badge {
-          display: inline-block;
-          font-size: 9px;
+        .lv-beta {
+          font-size: 10px;
           font-weight: 700;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
           color: #6b1228;
           background: rgba(107,18,40,0.08);
-          border: 1px solid rgba(107,18,40,0.15);
+          border: 1px solid rgba(107,18,40,0.14);
           border-radius: 99px;
-          padding: 3px 9px;
-          margin-bottom: 6px;
+          padding: 3px 10px;
+        }
+
+        .lv-footer-text {
+          font-size: 12px;
+          color: #c0b0aa;
+          font-weight: 400;
         }
       `}</style>
 
-      <div className="login-root">
-        {/* Left decorative panel */}
-        <div className="login-panel">
-          <div className="panel-corner" />
-          <div className="panel-texture" />
-          <div className="panel-bottom-arc" />
+      <div className="lv-root">
+        <div className="lv-bg-1" />
+        <div className="lv-bg-2" />
 
-          <div className="panel-crest">
-            <div className="panel-crest-icon">
-              <BookMarked color="#fff" size={22} />
+        <motion.div
+          style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.38, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          {/* Institution */}
+          <div className="lv-institution">
+            <div className="lv-logo">
+              <BookMarked color="#fff" size={26} />
             </div>
-            <div className="panel-crest-name">
-              Escuelas Pías<br />Colegio Calasanz
+            <div>
+              <div className="lv-inst-name">Escuelas Pías · Colegio Calasanz</div>
+              <div className="lv-inst-sub">Sistema de Gestión de Biblioteca</div>
             </div>
           </div>
 
-          <div className="panel-heading">
-            <h2>Sistema de Gestión<br />de Biblioteca</h2>
-            <div className="panel-divider" />
-            <p>
-              Control, auditoría y seguimiento histórico de libros
-              en depósito central. Acceso exclusivo para personal autorizado.
-            </p>
-          </div>
-        </div>
+          {/* Card */}
+          <div className="lv-card">
+            <div className="lv-card-title">Iniciar sesión</div>
+            <div className="lv-card-desc">Ingresá tus credenciales para continuar</div>
+            <div className="lv-divider" />
 
-        {/* Right form side */}
-        <div className="login-form-side">
-          <div className="form-bg-blob" />
-
-          <motion.div
-            className="form-container"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            {/* Mobile-only header */}
-            <div className="mobile-header">
-              <div className="mobile-header-icon">
-                <BookMarked color="#fff" size={24} />
-              </div>
-              <h1>Escuelas Pías<br />Colegio Calasanz</h1>
-              <p>Sistema de Gestión de Biblioteca</p>
-            </div>
-
-            {/* Card */}
-            <div className="form-card">
-              <div className="form-card-header">
-                <span className="eyebrow">Acceso al sistema</span>
-                <h2>Iniciar sesión</h2>
-                <p>Ingresá tus credenciales para continuar</p>
-              </div>
-
-              <div className="form-card-sep" />
-
-              <form onSubmit={handleSubmit}>
-                <div className="field-group">
-                  <div className="field">
-                    <label htmlFor="email">Usuario</label>
-                    <div className="field-input-wrap">
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="tuemail@editorial.com"
-                        autoComplete="email"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="field">
-                    <label htmlFor="password">Contraseña</label>
-                    <div className="field-input-wrap">
-                      <input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="has-toggle"
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="button"
-                        className="toggle-btn"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                      >
-                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                    </div>
+            <form onSubmit={handleSubmit}>
+              <div className="lv-fields">
+                <div className="lv-field">
+                  <label htmlFor="email">Usuario</label>
+                  <div className="lv-input-wrap">
+                    <input
+                      id="email"
+                      type="email"
+                      className="lv-input"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="tuemail@editorial.com"
+                      autoComplete="email"
+                    />
                   </div>
                 </div>
 
-                {error && (
-                  <motion.div
-                    className="error-box"
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="error-dot" />
-                    <p>{error}</p>
-                  </motion.div>
-                )}
+                <div className="lv-field">
+                  <label htmlFor="password">Contraseña</label>
+                  <div className="lv-input-wrap">
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      className="lv-input pw"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className="lv-eye"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  disabled={loading}
+              {error && (
+                <motion.div
+                  className="lv-error"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  {loading && <span className="spinner" />}
-                  {loading ? 'Verificando...' : 'Acceder al Panel'}
-                </button>
-              </form>
-            </div>
+                  <div className="lv-error-dot" />
+                  <p>{error}</p>
+                </motion.div>
+              )}
 
-            <div className="form-footer">
-              <span className="beta-badge">Beta</span>
-              <p>Sistema interno — acceso restringido</p>
-            </div>
-          </motion.div>
-        </div>
+              <button type="submit" className="lv-submit" disabled={loading}>
+                {loading && <span className="lv-spinner" />}
+                {loading ? 'Verificando...' : 'Acceder al Panel'}
+              </button>
+            </form>
+          </div>
+
+          <div className="lv-footer">
+            <span className="lv-beta">Beta</span>
+            <span className="lv-footer-text">Sistema interno — acceso restringido</span>
+          </div>
+        </motion.div>
       </div>
     </>
   );

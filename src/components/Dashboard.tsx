@@ -47,10 +47,10 @@ const Dashboard = ({
   }), [books, search, filterEstado]);
 
   const kpis = [
-    { label: 'Total Libros',      value: summary.totalBooks,       icon: BookOpen,      warning: false },
-    { label: 'Stock Bajo',        value: summary.lowStockBooks,    icon: AlertTriangle, warning: true  },
-    { label: 'Envíos Recientes',  value: summary.recentShipments,  icon: Send,          warning: false },
-    { label: 'Movimientos Hoy',   value: summary.todayMovements,   icon: Activity,      warning: false },
+    { label: 'Total Libros',     value: summary.totalBooks,      icon: BookOpen,      warning: false },
+    { label: 'Stock Bajo',       value: summary.lowStockBooks,   icon: AlertTriangle, warning: true  },
+    { label: 'Envíos Recientes', value: summary.recentShipments, icon: Send,          warning: false },
+    { label: 'Movimientos Hoy',  value: summary.todayMovements,  icon: Activity,      warning: false },
   ];
 
   const filterLabels: Record<string, string> = {
@@ -60,19 +60,20 @@ const Dashboard = ({
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+        * { box-sizing: border-box; }
 
         .db-root {
           min-height: 100svh;
-          background: #f7f4f0;
-          font-family: 'Lato', sans-serif;
+          background: #f5f1ee;
+          font-family: 'DM Sans', sans-serif;
         }
 
         /* ── Navbar ── */
         .db-nav {
           position: sticky;
-          top: 0;
-          z-index: 20;
+          top: 0; z-index: 20;
           background: #6b1228;
           border-bottom: 1px solid rgba(255,255,255,0.1);
         }
@@ -103,27 +104,28 @@ const Dashboard = ({
         }
 
         .db-nav-title {
-          font-family: 'Playfair Display', serif;
           font-size: 15px;
-          font-weight: 600;
+          font-weight: 700;
+          letter-spacing: -0.01em;
           color: #fff;
           line-height: 1.2;
         }
 
         .db-nav-sub {
           font-size: 11px;
-          color: rgba(255,255,255,0.55);
-          font-weight: 300;
+          font-weight: 400;
+          color: rgba(255,255,255,0.5);
           line-height: 1;
+          margin-top: 2px;
         }
 
         .db-nav-logout {
           display: flex;
           align-items: center;
           gap: 7px;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px;
+          font-weight: 600;
           color: rgba(255,255,255,0.65);
           background: none;
           border: 1px solid rgba(255,255,255,0.18);
@@ -138,51 +140,50 @@ const Dashboard = ({
           color: #fff;
         }
 
-        /* ── Page body ── */
+        /* ── Body ── */
         .db-body {
           max-width: 1200px;
           margin: 0 auto;
           padding: 32px 28px 48px;
         }
 
-        /* ── Page title row ── */
+        /* ── Title row ── */
         .db-title-row {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
           flex-wrap: wrap;
           gap: 16px;
-          margin-bottom: 28px;
+          margin-bottom: 26px;
         }
 
         .db-title-row h2 {
-          font-family: 'Playfair Display', serif;
           font-size: 26px;
           font-weight: 700;
+          letter-spacing: -0.025em;
           color: #1a1a1a;
           margin: 0 0 4px;
-          line-height: 1.2;
+          line-height: 1.15;
         }
 
         .db-title-row p {
           font-size: 13px;
-          color: #8a8a8a;
+          font-weight: 400;
+          color: #9e8e88;
           margin: 0;
-          font-weight: 300;
         }
 
         .db-btn-add {
           display: flex;
           align-items: center;
           gap: 8px;
-          height: 40px;
+          height: 42px;
           padding: 0 20px;
           background: #6b1228;
           color: #fff;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 600;
           border: none;
           border-radius: 10px;
           cursor: pointer;
@@ -191,15 +192,15 @@ const Dashboard = ({
           white-space: nowrap;
         }
 
-        .db-btn-add:hover { background: #7d1630; box-shadow: 0 6px 18px rgba(107,18,40,0.36); }
-        .db-btn-add:active { transform: scale(0.985); }
+        .db-btn-add:hover  { background: #7c1530; box-shadow: 0 6px 18px rgba(107,18,40,0.36); }
+        .db-btn-add:active { transform: scale(0.987); }
 
         /* ── KPI grid ── */
         .db-kpi-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 14px;
-          margin-bottom: 28px;
+          margin-bottom: 26px;
         }
 
         @media (max-width: 860px) { .db-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -209,15 +210,12 @@ const Dashboard = ({
           background: #fff;
           border-radius: 14px;
           padding: 20px 22px;
-          border: 1px solid #e8ddd8;
+          border: 1px solid #e4dbd6;
           position: relative;
           overflow: hidden;
         }
 
-        .db-kpi.warning {
-          background: #fff8f0;
-          border-color: #f0d8c0;
-        }
+        .db-kpi.warning { background: #fff8f0; border-color: #f0d8c0; }
 
         .db-kpi-accent {
           position: absolute;
@@ -236,33 +234,28 @@ const Dashboard = ({
           margin-bottom: 10px;
         }
 
-        .db-kpi-icon {
-          color: #6b1228;
-        }
-
+        .db-kpi-icon { color: #6b1228; }
         .db-kpi.warning .db-kpi-icon { color: #d97706; }
 
         .db-kpi-label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.13em;
-          text-transform: uppercase;
-          color: #7a6a64;
+          font-size: 12px;
+          font-weight: 500;
+          color: #9e8e88;
         }
 
         .db-kpi.warning .db-kpi-label { color: #92600a; }
 
         .db-kpi-value {
-          font-family: 'Playfair Display', serif;
           font-size: 30px;
           font-weight: 700;
+          letter-spacing: -0.03em;
           color: #1a1a1a;
           line-height: 1;
         }
 
         .db-kpi.warning .db-kpi-value { color: #92600a; }
 
-        /* ── Search & filter bar ── */
+        /* ── Search & filter ── */
         .db-search-row {
           display: flex;
           gap: 10px;
@@ -271,55 +264,53 @@ const Dashboard = ({
         }
 
         .db-search-wrap {
-          flex: 1;
-          min-width: 200px;
-          position: relative;
+          flex: 1; min-width: 200px; position: relative;
         }
 
         .db-search-icon {
           position: absolute;
-          left: 13px;
-          top: 50%;
+          left: 13px; top: 50%;
           transform: translateY(-50%);
-          color: #a89890;
+          color: #b5a09a;
           pointer-events: none;
         }
 
         .db-search-input {
           width: 100%;
-          height: 40px;
+          height: 42px;
           padding: 0 14px 0 40px;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 400;
           color: #1a1a1a;
           background: #fff;
-          border: 1.5px solid #e6ddd8;
+          border: 1.5px solid #e4dbd6;
           border-radius: 10px;
           outline: none;
           transition: border-color 0.18s, box-shadow 0.18s;
           box-sizing: border-box;
         }
 
-        .db-search-input::placeholder { color: #c0b0a8; }
+        .db-search-input::placeholder { color: #c5b5ae; }
 
         .db-search-input:focus {
           border-color: #6b1228;
-          box-shadow: 0 0 0 3px rgba(107,18,40,0.1);
+          box-shadow: 0 0 0 3px rgba(107,18,40,0.08);
         }
 
         .db-filter-btn {
           display: flex;
           align-items: center;
           gap: 7px;
-          height: 40px;
+          height: 42px;
           padding: 0 16px;
           background: #fff;
-          border: 1.5px solid #e6ddd8;
+          border: 1.5px solid #e4dbd6;
           border-radius: 10px;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          color: #5a5a5a;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 600;
+          color: #5a5050;
           cursor: pointer;
           transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
@@ -330,55 +321,45 @@ const Dashboard = ({
           color: #6b1228;
         }
 
-        /* Filter chips */
+        /* Filter chips panel */
         .db-filter-chips {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
           align-items: center;
-          margin-bottom: 20px;
+          margin-bottom: 18px;
           padding: 14px 16px;
           background: #fff;
-          border: 1px solid #e6ddd8;
+          border: 1px solid #e4dbd6;
           border-radius: 12px;
         }
 
         .db-filter-chip {
-          height: 30px;
+          height: 32px;
           padding: 0 14px;
           border-radius: 99px;
-          font-family: 'Lato', sans-serif;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13px;
+          font-weight: 600;
           cursor: pointer;
-          border: 1.5px solid #e6ddd8;
+          border: 1.5px solid #e4dbd6;
           background: #fff;
           color: #7a6a64;
           transition: all 0.15s;
         }
 
-        .db-filter-chip:hover {
-          border-color: #6b1228;
-          color: #6b1228;
-        }
-
-        .db-filter-chip.active {
-          background: #6b1228;
-          border-color: #6b1228;
-          color: #fff;
-        }
+        .db-filter-chip:hover { border-color: #6b1228; color: #6b1228; }
+        .db-filter-chip.active { background: #6b1228; border-color: #6b1228; color: #fff; }
 
         .db-clear-btn {
           display: flex;
           align-items: center;
           gap: 5px;
-          font-size: 11px;
-          font-weight: 700;
-          color: #a89890;
-          background: none;
-          border: none;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px;
+          font-weight: 600;
+          color: #b5a09a;
+          background: none; border: none;
           cursor: pointer;
           padding: 4px 6px;
           border-radius: 6px;
@@ -391,30 +372,27 @@ const Dashboard = ({
         .db-table-card {
           background: #fff;
           border-radius: 16px;
-          border: 1px solid #e8ddd8;
+          border: 1px solid #e4dbd6;
           overflow: hidden;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
         }
 
-        .db-table-card table {
-          width: 100%;
-          border-collapse: collapse;
-        }
+        .db-table-card table { width: 100%; border-collapse: collapse; }
 
         .db-table-card thead tr {
-          background: #f7f4f0;
-          border-bottom: 1px solid #e8ddd8;
+          background: #f5f1ee;
+          border-bottom: 1px solid #e4dbd6;
         }
 
         .db-table-card th {
           padding: 12px 20px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #7a6a64;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px;
+          font-weight: 600;
+          color: #9e8e88;
           text-align: left;
           white-space: nowrap;
+          letter-spacing: 0.01em;
         }
 
         .db-table-card th.right { text-align: right; }
@@ -436,46 +414,37 @@ const Dashboard = ({
         }
 
         /* Book cell */
-        .db-book-cell {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
+        .db-book-cell { display: flex; align-items: center; gap: 12px; }
 
         .db-book-thumb {
           width: 30px; height: 40px;
-          border-radius: 5px;
-          object-fit: cover;
-          border: 1px solid #e6ddd8;
-          flex-shrink: 0;
+          border-radius: 5px; object-fit: cover;
+          border: 1px solid #e4dbd6; flex-shrink: 0;
         }
 
         .db-book-title {
-          font-weight: 700;
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
           color: #1a1a1a;
-          font-size: 13px;
           line-height: 1.3;
         }
 
         .db-book-meta {
-          font-size: 11px;
-          color: #a89890;
+          font-size: 12px;
+          font-weight: 400;
+          color: #b5a09a;
           margin-top: 2px;
-          font-weight: 300;
         }
 
         .db-isbn {
           font-family: 'Courier New', monospace;
           font-size: 12px;
-          color: #8a8a8a;
+          color: #9e8e88;
           letter-spacing: 0.02em;
         }
 
-        .db-stock {
-          font-weight: 700;
-          font-size: 14px;
-        }
-
+        .db-stock { font-weight: 700; font-size: 14px; }
         .db-stock.low { color: #d97706; }
         .db-stock.ok  { color: #1a1a1a; }
 
@@ -484,21 +453,19 @@ const Dashboard = ({
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          padding: 3px 10px;
+          padding: 4px 10px;
           border-radius: 99px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px;
+          font-weight: 600;
         }
 
         .db-badge-dot {
           width: 5px; height: 5px;
-          border-radius: 50%;
-          flex-shrink: 0;
+          border-radius: 50%; flex-shrink: 0;
         }
 
-        /* Actions */
+        /* Row actions */
         .db-actions {
           display: flex;
           align-items: center;
@@ -513,57 +480,49 @@ const Dashboard = ({
         .db-action-btn {
           width: 30px; height: 30px;
           border-radius: 7px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #a89890;
+          display: flex; align-items: center; justify-content: center;
+          background: none; border: none;
+          cursor: pointer; color: #b5a09a;
           transition: background 0.12s, color 0.12s;
         }
 
-        .db-action-btn:hover       { background: #f0ebe6; color: #6b1228; }
+        .db-action-btn:hover        { background: #f0ebe6; color: #6b1228; }
         .db-action-btn.danger:hover { background: #fdf2f4; color: #b91c1c; }
 
         /* Empty state */
         .db-empty {
           padding: 64px 20px;
           text-align: center;
-          color: #a89890;
+          color: #b5a09a;
           font-size: 13px;
-          font-weight: 300;
+          font-weight: 400;
         }
 
         .db-empty strong {
           display: block;
           font-size: 15px;
           font-weight: 700;
-          color: #5a5a5a;
+          letter-spacing: -0.01em;
+          color: #5a5050;
           margin-bottom: 6px;
         }
 
-        /* ── Delete confirm modal ── */
+        /* ── Delete modal ── */
         .db-modal-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 50;
-          background: rgba(30,10,15,0.45);
+          position: fixed; inset: 0; z-index: 50;
+          background: rgba(30,10,15,0.42);
           backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: flex; align-items: center; justify-content: center;
           padding: 20px;
         }
 
         .db-modal {
           background: #fff;
-          border-radius: 18px;
+          border-radius: 20px;
           padding: 32px;
-          max-width: 400px;
-          width: 100%;
-          box-shadow: 0 24px 64px rgba(0,0,0,0.2);
-          border: 1px solid #e8ddd8;
+          max-width: 400px; width: 100%;
+          box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+          border: 1px solid #e4dbd6;
         }
 
         .db-modal-icon {
@@ -576,39 +535,33 @@ const Dashboard = ({
         }
 
         .db-modal h3 {
-          font-family: 'Playfair Display', serif;
-          font-size: 18px;
+          font-size: 19px;
           font-weight: 700;
+          letter-spacing: -0.02em;
           color: #1a1a1a;
           margin: 0 0 10px;
         }
 
         .db-modal p {
-          font-size: 13px;
-          color: #6a6a6a;
-          line-height: 1.65;
+          font-size: 14px;
+          font-weight: 400;
+          color: #6a6060;
+          line-height: 1.6;
           margin: 0 0 24px;
-          font-weight: 300;
         }
 
         .db-modal p strong { font-weight: 700; color: #1a1a1a; }
 
-        .db-modal-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-        }
+        .db-modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
 
         .db-modal-cancel {
-          height: 38px;
-          padding: 0 18px;
-          border-radius: 9px;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
+          height: 40px; padding: 0 18px;
+          border-radius: 10px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 600;
           color: #7a6a64;
           background: #fff;
-          border: 1.5px solid #e6ddd8;
+          border: 1.5px solid #e4dbd6;
           cursor: pointer;
           transition: background 0.15s;
         }
@@ -616,22 +569,19 @@ const Dashboard = ({
         .db-modal-cancel:hover { background: #f0ebe6; }
 
         .db-modal-delete {
-          height: 38px;
-          padding: 0 20px;
-          border-radius: 9px;
-          font-family: 'Lato', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
+          height: 40px; padding: 0 20px;
+          border-radius: 10px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 14px; font-weight: 600;
           color: #fff;
           background: #b91c1c;
-          border: none;
-          cursor: pointer;
+          border: none; cursor: pointer;
           box-shadow: 0 4px 12px rgba(185,28,28,0.28);
           transition: background 0.15s, transform 0.1s;
         }
 
-        .db-modal-delete:hover { background: #991b1b; }
-        .db-modal-delete:active { transform: scale(0.985); }
+        .db-modal-delete:hover  { background: #991b1b; }
+        .db-modal-delete:active { transform: scale(0.987); }
       `}</style>
 
       <motion.div
@@ -649,10 +599,8 @@ const Dashboard = ({
                 <BookOpen color="#fff" size={16} />
               </div>
               <div>
-                <div className="db-nav-title">Depósito Norte</div>
-                {user && (
-                  <div className="db-nav-sub">{user.nombre} · {user.rol}</div>
-                )}
+                <div className="db-nav-title">Escuelas Pías Colegio Calasanz - C.A.B.A</div>
+                {user && <div className="db-nav-sub">{user.nombre} · {user.rol}</div>}
               </div>
             </div>
 
@@ -672,7 +620,7 @@ const Dashboard = ({
               <p>Monitoreo de existencias y movimientos en tiempo real.</p>
             </div>
             <button className="db-btn-add" onClick={() => setShowAddDialog(true)}>
-              <Plus size={15} /> Nuevo Libro
+              <Plus size={15} /> Nuevo libro
             </button>
           </div>
 
@@ -693,7 +641,7 @@ const Dashboard = ({
           {/* Search & filter */}
           <div className="db-search-row">
             <div className="db-search-wrap">
-              <Search size={16} className="db-search-icon" />
+              <Search size={15} className="db-search-icon" />
               <input
                 className="db-search-input"
                 value={search}
@@ -779,15 +727,12 @@ const Dashboard = ({
                           </span>
                         </td>
 
-                        <td onClick={() => onSelectBook(book)} style={{ color: '#8a8a8a', fontWeight: 300 }}>
+                        <td onClick={() => onSelectBook(book)} style={{ color: '#9e8e88', fontWeight: 400 }}>
                           {book.ultima_provincia}
                         </td>
 
                         <td onClick={() => onSelectBook(book)}>
-                          <span
-                            className="db-badge"
-                            style={{ background: est.bg, color: est.color }}
-                          >
+                          <span className="db-badge" style={{ background: est.bg, color: est.color }}>
                             <span className="db-badge-dot" style={{ background: est.dot }} />
                             {est.label}
                           </span>
